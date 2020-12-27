@@ -18,6 +18,9 @@
 #define SHEET_H 21*TILE_H
 #define TILE_MAP "../Media/map1_Kachelebene 1.csv"
 
+#define KEY_SEEN 1
+#define KEY_RELEASED 2
+
 typedef struct {
 	ALLEGRO_TIMER* timer;
 	ALLEGRO_EVENT_QUEUE* queue;
@@ -27,6 +30,7 @@ typedef struct {
 		ALLEGRO_BITMAP* sheet;
 		ALLEGRO_BITMAP* sprite_map[SPRITE_MAX];
 	} sprites;
+	unsigned char key[ALLEGRO_KEY_MAX];
 }ALLEGRO;
 
 class Game {

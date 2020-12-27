@@ -45,6 +45,7 @@ void App::Load (void) {
 	al_register_event_source(al.queue, al_get_display_event_source(al.disp));
 	al_register_event_source(al.queue, al_get_timer_event_source(al.timer));
 	al_register_event_source(al.queue, al_get_mouse_event_source());
+	memset(al.key, 0, sizeof(al.key));
 	
 	int cnt = 0, i, j;
 	for (i = 0; i < SHEET_H; i+=TILE_H) {
