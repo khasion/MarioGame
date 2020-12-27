@@ -1,12 +1,16 @@
 #include "game.hpp"
 
-ALLEGRO_BITMAP* getSprite(int id, ALLEGRO_BITMAP** sprite_map) {
-	return sprite_map[id];
+ALLEGRO al;
+
+ALLEGRO_BITMAP* getSprite(int id) {
+	return al.sprites.sprite_map[id];
 }
 
-std::vector<std::vector<int>> readTextMap (ALLEGRO_BITMAP** sprite_map) {
+std::vector<std::vector<int>> readTextMap () {
 	std::vector<std::vector<int>> v;
 	std::vector<int> tempv;
+
+	ALLEGRO_BITMAP** sprite_map = al.sprites.sprite_map;
 
 	std::ifstream file(TILE_MAP);
 	int i = 0;
@@ -28,57 +32,24 @@ std::vector<std::vector<int>> readTextMap (ALLEGRO_BITMAP** sprite_map) {
 	return v;
 }
 
-void Game::MainLoop (ALLEGRO al) {
-	bool done = false;
-	bool redraw = true;
-	ALLEGRO_EVENT event;
+void Game::MainLoop () {
+	int loopCounter = 0;
+	unsigned fpsDistribution[MAX_FPS];
 
-	std::vector<std::vector<int>> map = readTextMap(al.sprites.sprite_map);
-	int x=0, y=0;
-	int cnt = 0;
 	al_start_timer(al.timer);
-	while (true) {
-		al_wait_for_event(al.queue, &event);
-		switch (event.type) {
-			case ALLEGRO_EVENT_TIMER:
-				std::cout << x << "," << y << std::endl;
-				if (al.key[ALLEGRO_KEY_HOME]) {
-					y-=5;
-				}
-				if (al.key[ALLEGRO_KEY_END]) {
-					y+=5;
-				}
-				redraw = true;
-				break;
-			case ALLEGRO_EVENT_MOUSE_AXES:
-				x = event.mouse.x;
-				redraw = true;
-				break;
-			case ALLEGRO_EVENT_KEY_DOWN:
-				al.key[event.keyboard.keycode] = KEY_SEEN;
-				break;
-			case ALLEGRO_EVENT_KEY_UP:
-				al.key[event.keyboard.keycode] &= KEY_RELEASED;
-				break;
-			case ALLEGRO_EVENT_DISPLAY_CLOSE:
-				done = true;
-				break;
-		}
-		if (done) { break;}
-		if (redraw && al_is_event_queue_empty(al.queue)) {
-			al_clear_to_color(al_map_rgb(0, 0, 0));
-			for (int i = 0; i < map.size(); i++) {
-				for (int j = 0; j < map[i].size(); j++) {
-					ALLEGRO_BITMAP* sprite = getSprite(map[i][j], al.sprites.sprite_map);
-					al_draw_bitmap(sprite, x+j*TILE_W, y+i*TILE_H, 0);
-				}
-			}
-			al_flip_display();
-			redraw = false;
-		}
+	while (!IsFinished()) {
+		al_wait_for_event(al.queue, &al.event);
+		MainLoopIteration();
 	}
 }
 
 void Game::MainLoopIteration(void) {
-
+	Render();
+	Input();
+	ProgressAnimations();
+	AI();
+	Physics();
+	CollisionChecking();
+	CommitDestructions();
+	UserCode();
 }

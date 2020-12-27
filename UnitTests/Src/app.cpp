@@ -14,7 +14,7 @@ void App::Initialize (void) {
 	must_init(al_install_keyboard(), "keyboard");
 	must_init(al_install_mouse(), "mouse");
 
-	ALLEGRO_TIMER* timer = al_create_timer(1.0 / 30.0);
+	ALLEGRO_TIMER* timer = al_create_timer(FPS);
 	must_init(timer, "timer");
 	al.timer = timer;
 

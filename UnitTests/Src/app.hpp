@@ -1,15 +1,16 @@
+#ifndef APP_HPP
+#define APP_HPP
 #include "game.hpp"
 
 namespace app {
 	class App {
 		protected:
 		Game game;
-		ALLEGRO al;
 		public:
 		virtual void Initialize (void);
 		virtual void Load (void);
-		virtual void Run (void) { 
-			game.MainLoop(al);
+		virtual void Run (void) {
+			game.MainLoop();
 		}
 		virtual void RunIteration (void) {
 			game.MainLoopIteration();
@@ -25,3 +26,4 @@ namespace app {
 		}
 	};
 }
+#endif
