@@ -1,16 +1,14 @@
 #include "game.hpp"
 
-ALLEGRO al;
-
 ALLEGRO_BITMAP* getSprite(int id) {
-	return al.sprites.sprite_map[id];
+	return al.map.tilemap[id];
 }
 
 std::vector<std::vector<int>> readTextMap () {
 	std::vector<std::vector<int>> v;
 	std::vector<int> tempv;
 
-	ALLEGRO_BITMAP** sprite_map = al.sprites.sprite_map;
+	ALLEGRO_BITMAP** sprite_map = al.map.tilemap;
 
 	std::ifstream file(TILE_MAP);
 	int i = 0;
@@ -34,8 +32,6 @@ std::vector<std::vector<int>> readTextMap () {
 
 void Game::MainLoop () {
 	int loopCounter = 0;
-	unsigned fpsDistribution[MAX_FPS];
-
 	al_start_timer(al.timer);
 	while (!IsFinished()) {
 		al_wait_for_event(al.queue, &al.event);
