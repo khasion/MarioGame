@@ -2,52 +2,37 @@
 
 TileMap tilemap;
 
-byte MakeIndex (byte row, byte col) {
-	return (col << COL_SHIFT) | row;
-}
-
-byte getCol (byte index) {
-	return index >> COL_SHIFT;
-}
-
-byte getRow (byte index) {
-	return index & ROW_MASK;
-}
-
-Dim TileX (byte index) {
-	return getCol(index) * TILE_WIDTH;
-}
-
-Dim TileY (byte index) {
-	return getRow(index) * TILE_HEIGHT;
-}
-
-Dim TileX2 (byte index) {
-	return MUL_TILE_WIDTH(getCol(index));
-}
-
-Dim TileY2 (byte index) {
-	return MUL_TILE_HEIGHT(getRow(index));
-}
-
-Index MakeIndex2(byte row, byte col) {
-	return ((MUL_TILE_WIDTH(col) << TILEX_SHIFT) | MUL_TILE_HEIGHT(row));
-}
-
-Dim TileX3 (Index index) { return index >> TILEX_SHIFT;}
-Dim TileY3 (Index index) { return index & TILEY_MASK;}
-
 void setTile(TileMap* m, Dim col, Dim row, Index index) {
 	(*m)[row][col] = index;
 }
 
 void PutTile (Bitmap dest, Dim x, Dim y, Bitmap tiles, Index tile) {
-	BitmapBlit(tiles, Rect{TileX3(tile), TileY3(tile), TILE_WIDTH, TILE_HEIGHT},
+	BitmapBlit(tiles, Rect{TileX(tile), TileY(tile), 16, 16},
 	dest, Point {x, y});
 }
 
 Index GetTile (const TileMap* m, Dim col, Dim row) {
 	return (*m)[row][col];
+}
+
+byte MakeIndex (byte row, byte col) {
+	return row*12 + col;
+}
+
+byte GetCol (byte index) {
+	return index % 12;
+}
+
+byte GetRow (byte index) {
+	return index / 12;
+}
+
+Dim TileX (byte index) {
+	return GetCol(index)*16;
+}
+
+Dim TileY (byte index) {
+	return GetRow(index)*16;
 }
 
 void WriteBinMap (const TileMap* m, FILE* fp) {
@@ -63,19 +48,18 @@ void WriteTextMap (const TileMap* m, FILE* fp) {
 }
 
 bool ReadTextMap (std::string path) {
-/*	std::vector<std::vector<int>> v;
-	std::vector<int> tempv;
-
-	ALLEGRO_BITMAP** sprite_map = al.map.tilemap;*/
+	std::vector<unsigned short> tempv (640, 61);
 	std::ifstream file(path);
 	int i = 0;
 	std::string input;
 	while (file >> input) {
 		std::string temp;
+		al.map.indexmap.push_back(tempv);
+		int j = 0;
 		for (auto it = input.cbegin(); it!=input.cend(); ++it) {
 			if (*it == ',') {
-				setTile(&tilemap, getCol(i), getRow(i), std::stoi(temp));
-				std::cout << tilemap[getRow(i)][getCol(i)] << std::endl;
+				//setTile(&tilemap, j++, i, std::stoi(temp));
+				al.map.indexmap[i][j++] = std::stoi(temp);
 				temp.clear();
 			}
 			else {

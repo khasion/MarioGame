@@ -42,20 +42,9 @@ void App::Load (void) {
 	memset(al.key, 0, sizeof(al.key));
 	
 	ReadTextMap(TILE_MAP);
-	/*int cnt = 0, i, j;
-	for (i = 0; i < SHEET_HEIGHT; i+=TILE_H) {
-		for (j = 0; j < SHEET_WIDTH; j+=TILE_W) {
-			ALLEGRO_BITMAP* sprite = al_create_sub_bitmap(al.sprites.sheet, j, i, TILE_W, TILE_H);
-			must_init(sprite, "sprite grab");
-			al.sprites.sprite_map[cnt++] = sprite;
-		}
-	}*/
 }
 
 void App::Clear (void) {
-	for (int i = 0; i < TILE_MAX; i++) {
-		BitmapDestroy(al.map.tilemap[i]);
-	}
 	BitmapDestroy(al.map.bitmap);
 	al_destroy_font(al.font);
 	al_destroy_display(al.disp);

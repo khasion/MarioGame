@@ -24,6 +24,7 @@ typedef struct {
 	bool redraw = true;
 	struct {
 		ALLEGRO_BITMAP* bitmap;
+		std::vector<std::vector<unsigned short>> indexmap;
 		ALLEGRO_BITMAP** tilemap;
 	}map;
 	unsigned char key[ALLEGRO_KEY_MAX];

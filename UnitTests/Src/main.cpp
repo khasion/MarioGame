@@ -35,17 +35,11 @@ int main()
 void render (void) {
 	if (al.redraw && al_is_event_queue_empty(al.queue)) {
 		al_clear_to_color(al_map_rgb(0, 0, 0));
-		/*for (int i = 0; i < MAX_HEIGHT; i++) {
-			for (int j = 0; j < MAX_WIDTH; j++) {
-				//ALLEGRO_BITMAP* sprite = (text_map[i][j]);
-				//byte index = tilemap[getRow(i)][getCol(i)];
-				//std::cout << (int)index << std::endl;
-				PutTile(al_get_target_bitmap(), j*16, i*16, al.map.bitmap, GetTile(&tilemap, getCol(j), getRow(j)));
-				//al_draw_bitmap(al.map.bitmap, x+j*TILE_W, y+i*TILE_H, 0);
+		for (int i = 0; i < al.map.indexmap.size(); i++) {
+			for (int j = 0; j < al.map.indexmap[i].size(); j++) {
+				Index index = al.map.indexmap[i][j];
+				PutTile(al_get_target_bitmap(), x+j*16, y+i*16, al.map.bitmap, index);
 			}
-		}*/
-		for (int i = 0; i < MAX_WIDTH; i++) {
-				PutTile(al_get_target_bitmap(), i*16, i*16, al.map.bitmap, GetTile(&tilemap, getCol(i), getRow(i)));
 		}
 		al_flip_display();
 		al.redraw = false;
