@@ -14,8 +14,8 @@ Dim TileY (byte index);
 
 typedef unsigned short Index;
 
-#define MAX_WIDTH 12*16
-#define MAX_HEIGHT 21*16
+#define MAX_WIDTH 50
+#define MAX_HEIGHT 50
 
 typedef Index TileMap[MAX_WIDTH][MAX_HEIGHT];
 extern TileMap tilemap;
@@ -32,5 +32,14 @@ void WriteTextMap (const TileMap*, FILE* fp);
 bool ReadTextMap (std::string path);
 
 TileMap* getTileMap (void);
+
+#define MUL_TILE_WIDTH(i)((i)<<4)
+#define MUL_TILE_HEIGHT(i)((i)<<4)
+#define DIV_TILE_WIDTH(i)((i)>>4)
+#define DIV_TILE_HEIGHT(i)((i)>>4)
+#define MOD_TILE_WIDTH(i)((i)&15)
+#define MOD_TILE_HEIGHT(i)((i)&15)
+
+void TileTerrainDisplay(TileMap* map, Bitmap dest, const Rect& viewWin, const Rect& displayArea);
 
 #endif

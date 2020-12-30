@@ -21,11 +21,8 @@ typedef struct {
 	ALLEGRO_MONITOR_INFO* monitor;
 	ALLEGRO_EVENT event;
 	bool done = false;
-	bool redraw = true;
 	struct {
 		ALLEGRO_BITMAP* bitmap;
-		std::vector<std::vector<unsigned short>> indexmap;
-		ALLEGRO_BITMAP** tilemap;
 	}map;
 	unsigned char key[ALLEGRO_KEY_MAX];
 }ALLEGRO;
@@ -37,14 +34,6 @@ typedef unsigned char RGBValue;
 typedef unsigned char Alpha;
 struct RGB { RGBValue r, g, b; };
 struct RGBA : public RGB { RGBValue a; };
-/*
-typedef RGB Palette[256];
-void SetPalette (RGB* palette);
-
-Color Make8  (RGBValue r, RGBValue g, RGBValue b);
-Color Make16 (RGBValue r, RGBValue g, RGBValue b);
-Color Make24 (RGBValue r, RGBValue g, RGBValue b);
-Color Make32 (RGBValue r, RGBValue g, RGBValue b, Alpha alpha=0);*/
 
 typedef unsigned short Dim;
 struct Rect		{int x, y, w, h; };
@@ -70,4 +59,10 @@ void	BitmapBlit(
 						Bitmap src,  const Rect& from,
 						Bitmap dest, const Point& to
 				);
+
+
+extern Bitmap dpyBuffer;
+extern bool dpyChanged;
+extern Dim dpyX, dpyY;
+
 #endif

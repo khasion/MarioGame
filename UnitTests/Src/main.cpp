@@ -1,6 +1,6 @@
 #include "app.hpp"
 
-int x = 0, y = 0;
+int x= 0, y = 0;
 
 void render (void);
 void anim (void);
@@ -33,16 +33,20 @@ int main()
 }
 
 void render (void) {
-	if (al.redraw && al_is_event_queue_empty(al.queue)) {
-		al_clear_to_color(al_map_rgb(0, 0, 0));
-		for (int i = 0; i < al.map.indexmap.size(); i++) {
-			for (int j = 0; j < al.map.indexmap[i].size(); j++) {
-				Index index = al.map.indexmap[i][j];
+	if (al_is_event_queue_empty(al.queue)) {
+		dpyBuffer = al_get_target_bitmap();
+		TileTerrainDisplay(
+							&tilemap,
+							al.map.bitmap,
+							Rect{0, 0, GetResWidth(), GetResHeight()},
+							Rect{x, y, MAX_WIDTH, MAX_HEIGHT});
+		/*for (int i = 0; i < MAX_HEIGHT; i++) {
+			for (int j = 0; j < MAX_WIDTH; j++) {
+				Index index = GetTile(&tilemap, j, i);
 				PutTile(al_get_target_bitmap(), x+j*16, y+i*16, al.map.bitmap, index);
 			}
-		}
+		}*/
 		al_flip_display();
-		al.redraw = false;
 	}
 }
 
@@ -62,11 +66,11 @@ void input (void) {
 			for (int i = 0; i < ALLEGRO_KEY_MAX; i++) {
 				al.key[i] &= KEY_SEEN;
 			}
-			al.redraw = true;
+			dpyChanged = true;
 			break;
 		case ALLEGRO_EVENT_MOUSE_AXES:
 			x = al.event.mouse.x;
-			al.redraw = true;
+			dpyChanged = true;
 			break;
 		case ALLEGRO_EVENT_KEY_DOWN:
 			al.key[al.event.keyboard.keycode] = KEY_SEEN | KEY_RELEASED;

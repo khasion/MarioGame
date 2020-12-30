@@ -2,16 +2,21 @@
 
 ALLEGRO al;
 
+Bitmap dpyBuffer=nullptr;
+bool dpyChanged=true;
+Dim dpyX=0, dpyY=0;
+
 // Display routines
 bool Open (Dim rw, Dim rh, BitDepth depth) {
-	//al_set_new_display_option(ALLEGRO_SAMPLE_BUFFERS, 1, ALLEGRO_SUGGEST);
-	//al_set_new_display_option(ALLEGRO_SAMPLES, 8, ALLEGRO_SUGGEST);
+	/*al_set_new_display_option(ALLEGRO_SAMPLE_BUFFERS, 1, ALLEGRO_SUGGEST);
+	al_set_new_display_option(ALLEGRO_SAMPLES, 8, ALLEGRO_SUGGEST);
+	al_set_new_bitmap_flags(ALLEGRO_MIN_LINEAR | ALLEGRO_MAG_LINEAR);
+	al_set_new_display_flags(ALLEGRO_FRAMELESS);*/
 	al_set_new_display_option(ALLEGRO_COLOR_SIZE, depth, ALLEGRO_SUGGEST);
-	//al_set_new_bitmap_flags(ALLEGRO_MIN_LINEAR | ALLEGRO_MAG_LINEAR);
 	ALLEGRO_DISPLAY* disp = al_create_display(rw, rh);
 	al.disp = disp;
 	al.monitor = (ALLEGRO_MONITOR_INFO*) malloc(sizeof(ALLEGRO_MONITOR_INFO));
-	al_get_monitor_info(2, al.monitor);
+	al_get_monitor_info(0, al.monitor);
 	return disp? true : false;
 }
 
@@ -73,3 +78,4 @@ void BitmapBlit (Bitmap src, const Rect& from, Bitmap dest, const Point& to) {
 	al_draw_bitmap_region((ALLEGRO_BITMAP*)src, from.x, from.y, from.w, from.h, to.x, to.y, 0);
 	al_set_target_bitmap((ALLEGRO_BITMAP*)prev);
 }
+
