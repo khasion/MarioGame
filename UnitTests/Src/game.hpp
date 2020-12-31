@@ -1,7 +1,7 @@
 #ifndef GAME_HPP
 #define GAME_HPP
 
-#include "tilemap.hpp"
+#include "view.hpp"
 
 #define DISP_W 640
 #define DISP_H 480

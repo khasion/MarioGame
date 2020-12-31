@@ -14,19 +14,16 @@ void App::Initialize (void) {
 	must_init(al_install_keyboard(), "keyboard");
 	must_init(al_install_mouse(), "mouse");
 
-	ALLEGRO_TIMER* timer = al_create_timer(FPS);
-	must_init(timer, "timer");
-	al.timer = timer;
+	al.timer = al_create_timer(FPS);
+	must_init(al.timer, "timer");
 
-	ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
-	must_init(queue, "queue");
-	al.queue = queue;
+	al.queue = al_create_event_queue();
+	must_init(al.queue, "queue");
 
 	must_init(Open(DISP_W, DISP_H, bits8), "display");
 
-	ALLEGRO_FONT* font = al_create_builtin_font();
-	must_init(font, "font");
-	al.font = font;
+	al.font = al_create_builtin_font();
+	must_init(al.font, "font");
 
 	must_init(al_init_image_addon(), "image addon");
 
@@ -34,6 +31,7 @@ void App::Initialize (void) {
 }
 
 void App::Load (void) {
+	viewWin = {0, 0, GetResWidth(), GetResHeight()};
 	al.map.bitmap = (ALLEGRO_BITMAP*) BitmapLoad(SHEET);
 	al_register_event_source(al.queue, al_get_keyboard_event_source());
 	al_register_event_source(al.queue, al_get_display_event_source(al.disp));
@@ -42,9 +40,11 @@ void App::Load (void) {
 	memset(al.key, 0, sizeof(al.key));
 	
 	ReadTextMap(TILE_MAP);
+	dpyBuffer = BitmapCreate(640, 480);
 }
 
 void App::Clear (void) {
+	free(al.monitor);
 	BitmapDestroy(al.map.bitmap);
 	al_destroy_font(al.font);
 	al_destroy_display(al.disp);

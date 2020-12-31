@@ -1,6 +1,6 @@
 #include "app.hpp"
 
-int x= 0, y = 0;
+int dx = 0, dy = 0;
 
 void render (void);
 void anim (void);
@@ -34,18 +34,12 @@ int main()
 
 void render (void) {
 	if (al_is_event_queue_empty(al.queue)) {
-		dpyBuffer = al_get_target_bitmap();
+		std::cout << viewWin.x << "," << viewWin.y << std::endl;
 		TileTerrainDisplay(
 							&tilemap,
-							al.map.bitmap,
-							Rect{0, 0, GetResWidth(), GetResHeight()},
-							Rect{x, y, MAX_WIDTH, MAX_HEIGHT});
-		/*for (int i = 0; i < MAX_HEIGHT; i++) {
-			for (int j = 0; j < MAX_WIDTH; j++) {
-				Index index = GetTile(&tilemap, j, i);
-				PutTile(al_get_target_bitmap(), x+j*16, y+i*16, al.map.bitmap, index);
-			}
-		}*/
+							al_get_target_bitmap(),
+							viewWin,
+							Rect{0, 0, 0, 0});
 		al_flip_display();
 	}
 }
@@ -57,19 +51,25 @@ void anim (void) {
 void input (void) {
 	switch (al.event.type) {
 		case ALLEGRO_EVENT_TIMER:
-			if (al.key[ALLEGRO_KEY_HOME]) {
-				y-=5;
+			if (al.key[ALLEGRO_KEY_UP]) {
+				dx = 0 ;dy = -1;
+				FilterScroll(viewWin, &dx, &dy);
 			}
-			if (al.key[ALLEGRO_KEY_END]) {
-				y+=5;
+			if (al.key[ALLEGRO_KEY_DOWN]) {
+				dx = 0 ; dy = 1;
+				FilterScroll(viewWin, &dx, &dy);
+			}
+			if (al.key[ALLEGRO_KEY_LEFT]) {
+				dx = -1; dy = 0;
+				FilterScroll(viewWin, &dx, &dy);
+			}
+			if (al.key[ALLEGRO_KEY_RIGHT]) {
+				dx = 1; dy = 0;
+				FilterScroll(viewWin, &dx, &dy);
 			}
 			for (int i = 0; i < ALLEGRO_KEY_MAX; i++) {
 				al.key[i] &= KEY_SEEN;
 			}
-			dpyChanged = true;
-			break;
-		case ALLEGRO_EVENT_MOUSE_AXES:
-			x = al.event.mouse.x;
 			dpyChanged = true;
 			break;
 		case ALLEGRO_EVENT_KEY_DOWN:
