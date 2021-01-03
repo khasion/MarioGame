@@ -5,12 +5,10 @@
 
 #define DISP_W 640
 #define DISP_H 480
-#define MAX_FPS 200
+#define MAX_FPS 30
 #define FPS 1.0 / MAX_FPS
 
 #define TILE_MAX 252
-#define TILE_W 16
-#define TILE_H 16
 #define SHEET_WIDTH 12*TILE_W
 #define SHEET_HEIGHT 21*TILE_H
 #define TILE_MAP "../Media/map1_Kachelebene 1.csv"

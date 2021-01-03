@@ -1,6 +1,7 @@
 #include "app.hpp"
 
 int dx = 0, dy = 0;
+Rect p{0, 300, 16, 16};
 
 void render (void);
 void anim (void);
@@ -34,12 +35,12 @@ int main()
 
 void render (void) {
 	if (al_is_event_queue_empty(al.queue)) {
-		std::cout << viewWin.x << "," << viewWin.y << std::endl;
 		TileTerrainDisplay(
 							&tilemap,
 							al_get_target_bitmap(),
 							viewWin,
 							Rect{0, 0, 0, 0});
+		al_draw_circle(p.x, p.y, p.w/2, al_map_rgba_f(0, 0, 0.5, 0.5), 1);
 		al_flip_display();
 	}
 }
@@ -66,6 +67,16 @@ void input (void) {
 			if (al.key[ALLEGRO_KEY_RIGHT]) {
 				dx = 1; dy = 0;
 				FilterScroll(viewWin, &dx, &dy);
+			}
+			if (al.key[ALLEGRO_KEY_A]) {
+				dx = -1; dy = 0;
+				FilterGridMotion(&grid, p, &dx, &dy);
+				p.x += dx;
+			}
+			if (al.key[ALLEGRO_KEY_D]) {
+				dx = 1; dy = 0;
+				FilterGridMotion(&grid, p, &dx, &dy);
+				p.x += dx;
 			}
 			for (int i = 0; i < ALLEGRO_KEY_MAX; i++) {
 				al.key[i] &= KEY_SEEN;

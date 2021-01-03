@@ -40,6 +40,7 @@ void App::Load (void) {
 	memset(al.key, 0, sizeof(al.key));
 	
 	ReadTextMap(TILE_MAP);
+	ComputeTileGridBlocks1(&tilemap, &grid);
 	dpyBuffer = BitmapCreate(640, 480);
 }
 
