@@ -5,7 +5,7 @@
 
 #define DISP_W 640
 #define DISP_H 480
-#define MAX_FPS 30
+#define MAX_FPS 200 
 #define FPS 1.0 / MAX_FPS
 
 #define TILE_MAX 252

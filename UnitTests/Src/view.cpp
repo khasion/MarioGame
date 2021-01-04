@@ -147,7 +147,7 @@ bool ReadTextMap (std::string path) {
 	return true;
 }
 
-Rect viewWin = {0, 0, 0, 0};
+Rect view = {0, 0, 0, 0};
 
 void TileTerrainDisplay(TileMap* map, Bitmap dest, const Rect& viewWin, const Rect& displayArea) {
 	if(dpyChanged) {
@@ -196,7 +196,6 @@ static void FilterScrollDistance (int viewStartCoord,	int viewSize, int* d, int 
 void FilterScroll (Rect& viewWin, int* dx, int* dy) {
 	FilterScrollDistance(viewWin.x, viewWin.w, dx, GetMapPixelWidth());
 	FilterScrollDistance(viewWin.y, viewWin.h, dy, GetMapPixelHeight());
-	viewWin.x += *dx; viewWin.y += *dy;
 }
 
 GridMap grid;
@@ -238,10 +237,10 @@ void FilterGridMotion (GridMap* m, Rect& r, int* dx, int* dy) {
 		FilterGridMotionRight(m, r, dx);
 	}
 	if (*dy < 0) {
-		//FilterGridMotionUp(m, r, dy);
+		FilterGridMotionUp(m, r, dy);
 	}
 	else if (*dy > 0) {
-		//FilterGridMotionDown(m, r, dy);
+		FilterGridMotionDown(m, r, dy);
 	}
 }
 
@@ -282,7 +281,6 @@ void FilterGridMotionRight(GridMap* m, const Rect& r, int* dx) {
 			for (auto row = startRow; row <= endRow; ++row) {
 				if (CanPassGridTile(m, newCol, row, GRID_LEFT_SOLID_MASK)) {
 					*dx = MUL_GRID_ELEMENT_WIDTH(newCol) - (x2 + 1);
-					std::cout << "asd" << std::endl;
 					break;
 				}
 			}
@@ -290,12 +288,53 @@ void FilterGridMotionRight(GridMap* m, const Rect& r, int* dx) {
 	}
 }
 void FilterGridMotionUp(GridMap* m, const Rect& r, int* dy) {
+	auto y1_next = r.y + *dy;
+	if (y1_next < 0) {
+		*dy = -r.y;
+	}
+	else {
+		auto newRow = DIV_GRID_ELEMENT_WIDTH(y1_next);
+		auto currRow = DIV_GRID_ELEMENT_WIDTH(r.y);
+		if (newRow != currRow) {
+			assert (newRow + 1 == currRow);
+			auto startCol = DIV_GRID_ELEMENT_WIDTH(r.x);
+			auto endCol = DIV_GRID_ELEMENT_WIDTH(r.x  + r.w  - 1);
+			for (auto col = startCol; col <= endCol; ++col) {
+				if (CanPassGridTile(m, col, newRow, GRID_BOTTOM_SOLID_MASK)) {
+					*dy = MUL_GRID_ELEMENT_WIDTH(currRow) - r.y;
+					break;
+				}
+			}
+		}
+	}
 }
 void FilterGridMotionDown(GridMap* m, const Rect& r, int* dy) {
+	auto y2 = r.y + r.h + 1;
+	auto y2_next = y2 + *dy;
+	if (y2_next >= MAX_PIXEL_HEIGHT) {
+		*dy = MAX_PIXEL_WIDTH - y2;
+	}
+	else {
+		auto newRow = DIV_GRID_ELEMENT_HEIGHT(y2_next);
+		auto currRow = DIV_GRID_ELEMENT_HEIGHT(y2);
+		if (newRow != currRow) {
+			assert(newRow - 1 == currRow);
+			auto startCol = DIV_GRID_ELEMENT_WIDTH(r.x);
+			auto endCol = DIV_GRID_ELEMENT_WIDTH(r.x + r.w -1);
+			for (auto col = startCol; col <= endCol; ++col) {
+				if (CanPassGridTile(m, col, newRow, GRID_TOP_SOLID_MASK)) {
+					*dy = MUL_GRID_ELEMENT_WIDTH(newRow) - (y2 + 1);
+					break;
+				}
+			}
+		}
+	}
 }
 
 bool IsTileIndexAssumedEmpty (Index index) {
-	if (index < 48 || index == 61) {
+	if (index < 48 || index == 61 || index == 142 || (index >= 54 && index <= 59) ||
+	index == 69 || index == 71 || (index >= 81 && index <= 83) ||
+	index == 84 || index == 85 || index == 96 || index == 97)  {
 		return true;
 	}
 	return false;
@@ -305,7 +344,6 @@ void ComputeTileGridBlocks1 (const TileMap* map, GridMap* gridmap) {
 	for (auto row = 0; row < MAX_HEIGHT; ++row) {
 		for (auto col = 0; col < MAX_WIDTH; ++col) {
 			(*gridmap)[row][col] = IsTileIndexAssumedEmpty(GetTile(map, col, row)) ? GRID_EMPTY_TILE : GRID_SOLID_TILE;
-			std::cout << (int) (*gridmap)[row][col] << std::endl;
 		}
 	}
 }

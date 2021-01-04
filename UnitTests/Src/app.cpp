@@ -31,7 +31,7 @@ void App::Initialize (void) {
 }
 
 void App::Load (void) {
-	viewWin = {0, 0, GetResWidth(), GetResHeight()};
+	view = {0, 0, GetResWidth(), GetResHeight()};
 	al.map.bitmap = (ALLEGRO_BITMAP*) BitmapLoad(SHEET);
 	al_register_event_source(al.queue, al_get_keyboard_event_source());
 	al_register_event_source(al.queue, al_get_display_event_source(al.disp));

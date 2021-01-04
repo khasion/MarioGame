@@ -79,7 +79,7 @@ typedef unsigned short Index;
 
 #define TILE_WIDTH 16
 #define TILE_HEIGHT 16
-#define MAX_WIDTH 50
+#define MAX_WIDTH 50 
 #define MAX_HEIGHT 50
 
 typedef Index TileMap[MAX_WIDTH][MAX_HEIGHT];
@@ -105,7 +105,7 @@ TileMap* getTileMap (void);
 #define MOD_TILE_WIDTH(i)((i)&15)
 #define MOD_TILE_HEIGHT(i)((i)&15)
 
-extern Rect viewWin;
+extern Rect view;
 
 void TileTerrainDisplay(TileMap* map, Bitmap dest, const Rect& viewWin, const Rect& displayArea);
 
@@ -179,5 +179,79 @@ void FilterGridMotionDown(GridMap* m, const Rect& r, int* dy);
 
 extern bool IsTileIndexAssumedEmpty (Index index);
 void ComputeTileGridBlocks1 (const TileMap* map, GridMap* grid);
+
+class GridLayer {
+private:
+	GridIndex*	grid = nullptr;
+	unsigned		total = 0;
+	Dim			totalRows = 0, totalColumns = 0;
+	void Allocate (void) {
+		grid = new GridIndex [total = totalRows * totalColumns];
+		memset (grid, GRID_EMPTY_TILE, total);
+	}
+	void FilterGridMotionDown 	(const Rect& r, int* dy);
+	void FilterGridMotionUp 	(const Rect& r, int* dy);
+	void FilterGridMotionLeft 	(const Rect& r, int* dx);
+	void FilterGridMotionRight (const Rect& r, int* dx);
+public:
+	void	FilterGridMotion 	(const Rect& r, int* dx, int* dy);
+	bool	IsOnSolidGround	(const Rect& r) {
+		int dy = 1;
+		FilterGridMotionDown (r, &dy);
+		return dy == 0;
+	}
+	GridIndex*& GetBuffer (void) { return grid;}
+	GridLayer (unsigned rows, unsigned cols);
+};
+
+class TileLayer {
+private:
+	Index* 		map = nullptr;
+	GridLayer*	grid = nullptr; 
+	Dim			totalRows = 0, totalColumns = 0;
+	Bitmap		tileSet = nullptr;
+	Rect			viewWin;
+	Bitmap		dpyBuffer = nullptr;
+	bool			dpyChanged = true;
+	Dim			dpyX = 0, dpyY = 0;
+	void	Allocate (void) {
+		map = new Index [totalRows*totalColumns];
+		dpyBuffer = BitmapCreate(GetResWidth(), GetResHeight());
+	}
+public:
+	void SetTile (Dim col, Dim row, Index index);
+	Index GetTile (Dim col, Dim row) const {
+		return map[row * totalColumns + col];
+	}
+	const Point Pick (Dim x, Dim y) const {
+		return {DIV_TILE_WIDTH(x + viewWin.x), DIV_TILE_HEIGHT(y + viewWin.y)};
+	}
+	const Rect& GetViewWindow (void) const { return viewWin;}
+	void SetViewWindow (const Rect& r) { viewWin = r; dpyChanged = true;}
+	void Display (Bitmap dest, const Rect& displayArea);
+
+	Bitmap GetBitmap (void) const { return dpyBuffer;}
+	int GetPixelWidth (void) const { return viewWin.w;}
+	int GetPixelHeight (void) const { return viewWin.h;}
+	unsigned GetTileWidth (void) const { return DIV_TILE_WIDTH(viewWin.w);}
+	unsigned GetTileHeight (void) const { return DIV_TILE_HEIGHT(viewWin.h);}
+
+	void Scroll (float dx, float dy);
+	bool CanScrollHoriz (float dx) const;
+	bool CanScrollVert (float dy) const;
+
+	auto ToString (void) const -> const std::string;
+	bool FromString (const std::string&);
+	void Save (const std::string& path) const {
+		fclose (WriteText(fopen(path.c_str(), "wt")));
+	}
+	bool Load (const std::string& path);
+	FILE* WriteText (FILE* fp) const {
+		fprintf(fp, "%s", ToString().c_str()); return fp;
+	}
+	bool ReadText (FILE* fp);
+	TileLayer (Dim _rows, Dim _cols, Bitmap _tileset);
+	~TileLayer ();
+};
 
 #endif

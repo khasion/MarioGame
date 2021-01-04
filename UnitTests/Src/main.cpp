@@ -1,7 +1,7 @@
 #include "app.hpp"
 
 int dx = 0, dy = 0;
-Rect p{0, 300, 16, 16};
+Rect Player {0, 0, 16, 16};
 
 void render (void);
 void anim (void);
@@ -38,9 +38,9 @@ void render (void) {
 		TileTerrainDisplay(
 							&tilemap,
 							al_get_target_bitmap(),
-							viewWin,
+							view,
 							Rect{0, 0, 0, 0});
-		al_draw_circle(p.x, p.y, p.w/2, al_map_rgba_f(0, 0, 0.5, 0.5), 1);
+		al_draw_circle(Player.x, Player.y, 16/2, al_map_rgba_f(0, 0, 0.5, 0.5), 1);
 		al_flip_display();
 	}
 }
@@ -54,29 +54,43 @@ void input (void) {
 		case ALLEGRO_EVENT_TIMER:
 			if (al.key[ALLEGRO_KEY_UP]) {
 				dx = 0 ;dy = -1;
-				FilterScroll(viewWin, &dx, &dy);
+				FilterScroll(view, &dx, &dy);
+				view.y += dy;
 			}
 			if (al.key[ALLEGRO_KEY_DOWN]) {
 				dx = 0 ; dy = 1;
-				FilterScroll(viewWin, &dx, &dy);
+				FilterScroll(view, &dx, &dy);
+				view.y += dy;
 			}
 			if (al.key[ALLEGRO_KEY_LEFT]) {
 				dx = -1; dy = 0;
-				FilterScroll(viewWin, &dx, &dy);
+				FilterScroll(view, &dx, &dy);
+				view.x += dx;
 			}
 			if (al.key[ALLEGRO_KEY_RIGHT]) {
 				dx = 1; dy = 0;
-				FilterScroll(viewWin, &dx, &dy);
+				FilterScroll(view, &dx, &dy);
+				view.x += dx;
 			}
 			if (al.key[ALLEGRO_KEY_A]) {
 				dx = -1; dy = 0;
-				FilterGridMotion(&grid, p, &dx, &dy);
-				p.x += dx;
+				FilterGridMotion(&grid, Player, &dx, &dy);
+				Player.x += dx;
 			}
 			if (al.key[ALLEGRO_KEY_D]) {
 				dx = 1; dy = 0;
-				FilterGridMotion(&grid, p, &dx, &dy);
-				p.x += dx;
+				FilterGridMotion(&grid, Player, &dx, &dy);
+				Player.x += dx;
+			}
+			if (al.key[ALLEGRO_KEY_W]) {
+				dx = 0; dy = -1;
+				FilterGridMotion(&grid, Player, &dx, &dy);
+				Player.y += dy;
+			}
+			if (al.key[ALLEGRO_KEY_S]) {
+				dx = 0; dy = 1;
+				FilterGridMotion(&grid, Player, &dx, &dy);
+				Player.y += dy;
 			}
 			for (int i = 0; i < ALLEGRO_KEY_MAX; i++) {
 				al.key[i] &= KEY_SEEN;
