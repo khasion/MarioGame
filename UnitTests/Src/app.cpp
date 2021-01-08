@@ -31,22 +31,20 @@ void App::Initialize (void) {
 }
 
 void App::Load (void) {
-	view = {0, 0, GetResWidth(), GetResHeight()};
-	al.map.bitmap = (ALLEGRO_BITMAP*) BitmapLoad(SHEET);
 	al_register_event_source(al.queue, al_get_keyboard_event_source());
 	al_register_event_source(al.queue, al_get_display_event_source(al.disp));
 	al_register_event_source(al.queue, al_get_timer_event_source(al.timer));
 	al_register_event_source(al.queue, al_get_mouse_event_source());
 	memset(al.key, 0, sizeof(al.key));
-	
-	ReadTextMap(TILE_MAP);
-	ComputeTileGridBlocks1(&tilemap, &grid);
-	dpyBuffer = BitmapCreate(640, 480);
+
+	tlayer = (new TileLayer(MAX_WIDTH, MAX_HEIGHT, BitmapLoad(SHEET)));
+
+	tlayer->ReadText(TILE_MAP);
+	ComputeTileGridBlocks1(tlayer->GetTileMap(), tlayer->GetGridLayer()->GetBuffer());
 }
 
 void App::Clear (void) {
 	free(al.monitor);
-	BitmapDestroy(al.map.bitmap);
 	al_destroy_font(al.font);
 	al_destroy_display(al.disp);
 	al_destroy_timer(al.timer);

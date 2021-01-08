@@ -11,7 +11,7 @@
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_color.h>
 
-#define SHEET "../Media/overworld_tileset_grass.png"
+#define SHEET "../../ThirdParty/super_mario_sprite_sheet.png"
 
 typedef struct {
 	ALLEGRO_TIMER* timer;
@@ -21,13 +21,11 @@ typedef struct {
 	ALLEGRO_MONITOR_INFO* monitor;
 	ALLEGRO_EVENT event;
 	bool done = false;
-	struct {
-		ALLEGRO_BITMAP* bitmap;
-	}map;
 	unsigned char key[ALLEGRO_KEY_MAX];
 }ALLEGRO;
 
 extern ALLEGRO al;
+
 /* Display.*/
 typedef unsigned int	Color;
 typedef unsigned char RGBValue;
@@ -45,12 +43,13 @@ void 		Close (void);
 Dim 		GetResWidth (void);
 Dim 		GetResHeight (void);
 BitDepth GetDepth (void);
+
 /*Display.*/
 typedef void* Bitmap;
 Bitmap	BitmapLoad 		(const std::string& path);
 Bitmap	BitmapCreate	(Dim w, Dim h);
 Bitmap	BitmapCopy		(Bitmap bmp);
-Bitmap 	BitmapClear		(Bitmap bmp, Color c);
+Bitmap 	BitmapClear		(Bitmap bmp, RGB c);
 void		BitmapDestroy	(Bitmap bmp);
 Bitmap	BitmapGetScreen(void);
 Dim		BitmapGetWidth	(Bitmap bmp);
@@ -60,10 +59,6 @@ void	BitmapBlit(
 						Bitmap dest, const Point& to
 				);
 
-
-extern Bitmap dpyBuffer;
-extern bool dpyChanged;
-extern Dim dpyX, dpyY;
 
 typedef unsigned char byte;
 typedef unsigned short Dim;
@@ -79,24 +74,16 @@ typedef unsigned short Index;
 
 #define TILE_WIDTH 16
 #define TILE_HEIGHT 16
-#define MAX_WIDTH 50 
-#define MAX_HEIGHT 50
+#define SHEET_WIDTH 26
+#define SHEET_HEIGHT 24
+#define SHEET_PIXEL_WIDTH SHEET_WIDTH*TILE_W
+#define SHEET_PIXEL_HEIGHT SHEET_HEIGHT*TILE_H
+#define MAX_WIDTH 1000 
+#define MAX_HEIGHT 300
 
-typedef Index TileMap[MAX_WIDTH][MAX_HEIGHT];
-extern TileMap tilemap;
+typedef Index TileMap[MAX_HEIGHT][MAX_WIDTH];
 
 void PutTile (Bitmap dest, Dim x, Dim y, Bitmap tiles, Index tile);
-
-void SetTile(TileMap* m, Dim col, Dim row, Index index);
-
-Index GetTile (const TileMap* m, Dim col, Dim row);
-
-void WriteBinMap (const TileMap* m, FILE* fp);
-bool ReadBinMap (TileMap* m, FILE* fp);
-void WriteTextMap (const TileMap*, FILE* fp);
-bool ReadTextMap (std::string path);
-
-TileMap* getTileMap (void);
 
 #define MUL_TILE_WIDTH(i)((i)<<4)
 #define MUL_TILE_HEIGHT(i)((i)<<4)
@@ -105,24 +92,11 @@ TileMap* getTileMap (void);
 #define MOD_TILE_WIDTH(i)((i)&15)
 #define MOD_TILE_HEIGHT(i)((i)&15)
 
-extern Rect view;
-
-void TileTerrainDisplay(TileMap* map, Bitmap dest, const Rect& viewWin, const Rect& displayArea);
-
 int GetMapPixelWidth (void);
 int GetMapPixelHeight (void);
-/*Motion control.*/
-static void FilterScrollDistance (
-	int ViewStartCoord,
-	int viewSize,
-	int* d,
-	int maxMapSize
-);
 
-void FilterScroll (Rect& viewWin, int* dx, int* dy);
-
-#define GRID_ELEMENT_WIDTH 16
-#define GRID_ELEMENT_HEIGHT 16
+#define GRID_ELEMENT_WIDTH TILE_WIDTH
+#define GRID_ELEMENT_HEIGHT TILE_HEIGHT
 
 #if TILE_WIDTH % GRID_ELEMENT_WIDTH != 0
 #error "TILE_WIDTH % GRID_ELEMENT_WIDTH must be zero!"
@@ -139,8 +113,7 @@ void FilterScroll (Rect& viewWin, int* dx, int* dy);
 #define GRID_MAX_WIDTH 				(MAX_WIDTH * GRID_BLOCK_COLUMNS)
 
 using GridIndex = byte;
-typedef GridIndex GridMap[GRID_MAX_WIDTH][GRID_MAX_HEIGHT];
-extern GridMap grid;
+typedef GridIndex GridMap[GRID_MAX_HEIGHT][GRID_MAX_WIDTH];
 
 void SetGridTile (GridMap* m, Dim col, Dim row, GridIndex index);
 GridIndex GetGridTile (const GridMap* m, Dim col, Dim row);
@@ -170,88 +143,7 @@ bool CanPassGridTile (GridMap* m, Dim col, Dim row, GridIndex flags);
 #define MUL_GRID_ELEMENT_WIDTH(i)	((i)<<4)
 #define MUL_GRID_ELEMENT_HEIGHT(i)	((i)<<4)
 
-void FilterGridMotion (GridMap* m, Rect& r, int* dx, int* dy);
-
-void FilterGridMotionLeft(GridMap* m, const Rect& r, int* dx);
-void FilterGridMotionRight(GridMap* m, const Rect& r, int* dx);
-void FilterGridMotionUp(GridMap* m, const Rect& r, int* dy);
-void FilterGridMotionDown(GridMap* m, const Rect& r, int* dy);
-
 extern bool IsTileIndexAssumedEmpty (Index index);
 void ComputeTileGridBlocks1 (const TileMap* map, GridMap* grid);
-
-class GridLayer {
-private:
-	GridIndex*	grid = nullptr;
-	unsigned		total = 0;
-	Dim			totalRows = 0, totalColumns = 0;
-	void Allocate (void) {
-		grid = new GridIndex [total = totalRows * totalColumns];
-		memset (grid, GRID_EMPTY_TILE, total);
-	}
-	void FilterGridMotionDown 	(const Rect& r, int* dy);
-	void FilterGridMotionUp 	(const Rect& r, int* dy);
-	void FilterGridMotionLeft 	(const Rect& r, int* dx);
-	void FilterGridMotionRight (const Rect& r, int* dx);
-public:
-	void	FilterGridMotion 	(const Rect& r, int* dx, int* dy);
-	bool	IsOnSolidGround	(const Rect& r) {
-		int dy = 1;
-		FilterGridMotionDown (r, &dy);
-		return dy == 0;
-	}
-	GridIndex*& GetBuffer (void) { return grid;}
-	GridLayer (unsigned rows, unsigned cols);
-};
-
-class TileLayer {
-private:
-	Index* 		map = nullptr;
-	GridLayer*	grid = nullptr; 
-	Dim			totalRows = 0, totalColumns = 0;
-	Bitmap		tileSet = nullptr;
-	Rect			viewWin;
-	Bitmap		dpyBuffer = nullptr;
-	bool			dpyChanged = true;
-	Dim			dpyX = 0, dpyY = 0;
-	void	Allocate (void) {
-		map = new Index [totalRows*totalColumns];
-		dpyBuffer = BitmapCreate(GetResWidth(), GetResHeight());
-	}
-public:
-	void SetTile (Dim col, Dim row, Index index);
-	Index GetTile (Dim col, Dim row) const {
-		return map[row * totalColumns + col];
-	}
-	const Point Pick (Dim x, Dim y) const {
-		return {DIV_TILE_WIDTH(x + viewWin.x), DIV_TILE_HEIGHT(y + viewWin.y)};
-	}
-	const Rect& GetViewWindow (void) const { return viewWin;}
-	void SetViewWindow (const Rect& r) { viewWin = r; dpyChanged = true;}
-	void Display (Bitmap dest, const Rect& displayArea);
-
-	Bitmap GetBitmap (void) const { return dpyBuffer;}
-	int GetPixelWidth (void) const { return viewWin.w;}
-	int GetPixelHeight (void) const { return viewWin.h;}
-	unsigned GetTileWidth (void) const { return DIV_TILE_WIDTH(viewWin.w);}
-	unsigned GetTileHeight (void) const { return DIV_TILE_HEIGHT(viewWin.h);}
-
-	void Scroll (float dx, float dy);
-	bool CanScrollHoriz (float dx) const;
-	bool CanScrollVert (float dy) const;
-
-	auto ToString (void) const -> const std::string;
-	bool FromString (const std::string&);
-	void Save (const std::string& path) const {
-		fclose (WriteText(fopen(path.c_str(), "wt")));
-	}
-	bool Load (const std::string& path);
-	FILE* WriteText (FILE* fp) const {
-		fprintf(fp, "%s", ToString().c_str()); return fp;
-	}
-	bool ReadText (FILE* fp);
-	TileLayer (Dim _rows, Dim _cols, Bitmap _tileset);
-	~TileLayer ();
-};
 
 #endif

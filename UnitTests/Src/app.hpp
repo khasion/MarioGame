@@ -16,7 +16,6 @@ namespace app {
 			game.MainLoopIteration();
 		}
 		Game& GetGame (void) {return game; }
-		const Game& GetGame (void) const {return game; }
 		virtual void Clear (void);
 		void Main (void) {
 			Initialize();
