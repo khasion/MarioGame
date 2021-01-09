@@ -8,7 +8,8 @@
 #define FPS 1.0 / MAX_FPS
 
 #define TILE_MAX 252
-#define TILE_MAP "../../ThirdParty/layer1.csv"
+#define TILE_MAP "../../ThirdParty/Super_Mario.csv"
+#define BG_MAP "../../ThirdParty/bg.csv"
 
 #define KEY_SEEN 1
 #define KEY_RELEASED 2

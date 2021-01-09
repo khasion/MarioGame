@@ -37,9 +37,10 @@ void App::Load (void) {
 	al_register_event_source(al.queue, al_get_mouse_event_source());
 	memset(al.key, 0, sizeof(al.key));
 
-	tlayer = (new TileLayer(MAX_WIDTH, MAX_HEIGHT, BitmapLoad(SHEET)));
+	tlayer = (new TileLayer(MAX_HEIGHT, MAX_WIDTH, BitmapLoad(SHEET)));
 
 	tlayer->ReadText(TILE_MAP);
+	tlayer->GetBg()->LoadBackground(BG_MAP);
 	ComputeTileGridBlocks1(tlayer->GetTileMap(), tlayer->GetGridLayer()->GetBuffer());
 }
 

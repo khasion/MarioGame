@@ -163,20 +163,21 @@ bool TileLayer::CanScrollVert (int dy) const {
 }
 
 void TileLayer::Scroll (int dx, int dy) {
-	if (CanScrollHoriz(dx)) { viewWin.x += dx;}
+	if (CanScrollHoriz(dx)) { bg->Scroll(dx); viewWin.x += dx;}
 	if (CanScrollVert(dy)) 	{ viewWin.y += dy;}
 }
 
 void TileLayer::Display(Bitmap dest, const Rect& displayArea) {
 	if(dpyChanged) {
-		BitmapClear(dpyBuffer, RGB {0, 0, 0});
+		BitmapClear(dpyBuffer, RGB {0, 255, 255});
 		auto startCol= DIV_TILE_WIDTH(viewWin.x);
 		auto startRow= DIV_TILE_HEIGHT(viewWin.y);
 		auto endCol= DIV_TILE_WIDTH(viewWin.x + viewWin.w-1);
 		auto endRow= DIV_TILE_HEIGHT(viewWin.y + viewWin.h-1);
 		dpyX = MOD_TILE_WIDTH(viewWin.x);
-		dpyY = MOD_TILE_WIDTH(viewWin.y);
+		dpyY = MOD_TILE_HEIGHT(viewWin.y);
 		dpyChanged= false;
+		bg->Display(dpyBuffer, dpyX, dpyY);
 		for (Dim row = startRow; row <= endRow; ++row) {
 			for(Dim col = startCol; col <= endCol; ++col) {
 				PutTile(
@@ -189,6 +190,7 @@ void TileLayer::Display(Bitmap dest, const Rect& displayArea) {
 			}
 		}
 	}
+	BitmapClear(dest, RGB {0, 255, 255});
 	BitmapBlit(dpyBuffer, {dpyX, dpyY, viewWin.w, viewWin.h},
 	dest,
 	{ displayArea.x, displayArea.y});

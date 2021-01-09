@@ -75,11 +75,11 @@ typedef unsigned short Index;
 #define TILE_WIDTH 16
 #define TILE_HEIGHT 16
 #define SHEET_WIDTH 26
-#define SHEET_HEIGHT 24
+#define SHEET_HEIGHT 26
 #define SHEET_PIXEL_WIDTH SHEET_WIDTH*TILE_W
 #define SHEET_PIXEL_HEIGHT SHEET_HEIGHT*TILE_H
-#define MAX_WIDTH 1000 
-#define MAX_HEIGHT 300
+#define MAX_WIDTH 200 
+#define MAX_HEIGHT 16 
 
 typedef Index TileMap[MAX_HEIGHT][MAX_WIDTH];
 
