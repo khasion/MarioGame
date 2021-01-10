@@ -1,6 +1,6 @@
 #ifndef GAME_HPP
 #define GAME_HPP
-#include "layer.hpp"
+#include "anim.hpp"
 
 #define DISP_W 640
 #define DISP_H 480
