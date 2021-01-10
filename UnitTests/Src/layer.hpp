@@ -43,13 +43,11 @@ public:
 				if (*it == ',') {
 					int index = std::stoi(temp);
 					if (index == -1) { index = 8;}
-					std::cout << index << " ";
 					PutTile(bg, 16*j++, 16*i, tileSet, index);
 					temp.clear();
 				}
 				else { temp.push_back(*it);}
 			}
-			std::cout << std::endl;
 			i++;
 		}
 	}

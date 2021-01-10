@@ -190,7 +190,6 @@ void TileLayer::Display(Bitmap dest, const Rect& displayArea) {
 			}
 		}
 	}
-	BitmapClear(dest, RGB {0, 255, 255});
 	BitmapBlit(dpyBuffer, {dpyX, dpyY, viewWin.w, viewWin.h},
 	dest,
 	{ displayArea.x, displayArea.y});

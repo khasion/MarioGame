@@ -35,7 +35,7 @@ int main()
 
 void render (void) {
 	if (al_is_event_queue_empty(al.queue)) {
-		tlayer->Display(al_get_target_bitmap(), Rect {0, 240, 0, 0});
+		tlayer->Display(al_get_target_bitmap(), Rect {0, 0, 0, 0});
 		al_draw_circle(Player.x, Player.y, 16/2, al_map_rgba_f(0, 0, 0.5, 0.5), 1);
 		al_flip_display();
 	}
