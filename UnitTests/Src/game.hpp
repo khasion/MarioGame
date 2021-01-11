@@ -9,6 +9,7 @@
 
 #define TILE_MAP "../../ThirdParty/action.csv"
 #define BG_MAP "../../ThirdParty/background.csv"
+#define CHAR_MAP "../../ThirdParty/characters.gif"
 
 #define KEY_SEEN 1
 #define KEY_RELEASED 2
