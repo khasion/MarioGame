@@ -4,6 +4,8 @@
 #include <fstream>
 #include <vector>
 #include <functional>
+#include <map>
+#include <set>
 #include <stdlib.h>
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
@@ -59,6 +61,32 @@ void	BitmapBlit(
 						Bitmap dest, const Point& to
 				);
 
+class BitmapLoader {
+private:
+	using 	Bitmaps = std::map<std::string, Bitmap>;
+	Bitmaps	bitmaps;
+	Bitmap	GetBitmap (const std::string& path) const {
+		auto i = bitmaps.find(path);
+		return i != bitmaps.end() ? i->second : nullptr;
+	}
+public:
+	Bitmap	Load (const std::string& path) {
+		auto b = GetBitmap(path);
+		if (!b) {
+			bitmaps[path] = b = BitmapLoad(path);
+			assert(b);
+		}
+		return b;
+	}
+	void		CleanUp (void) {
+		for (auto& i : bitmaps) {
+			BitmapDestroy(i.second);
+		}
+		bitmaps.clear();
+	}
+	BitmapLoader (void) {}
+	~BitmapLoader(void) {CleanUp(); }
+};
 
 typedef unsigned short byte;
 typedef unsigned short Dim;
