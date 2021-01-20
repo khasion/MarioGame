@@ -55,7 +55,6 @@ public:
 		}
 	}
 };
-AnimationFilmHolder AnimationFilmHolder::holder;
 
 class Animation {
 protected:
