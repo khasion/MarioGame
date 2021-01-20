@@ -7,9 +7,10 @@
 #define MAX_FPS 200 
 #define FPS 1.0 / MAX_FPS
 
-#define TILE_MAP "../../ThirdParty/action.csv"
-#define BG_MAP "../../ThirdParty/background.csv"
-#define CHAR_MAP "../../ThirdParty/characters.gif"
+#define TILE_MAP 	"../../ThirdParty/action.csv"
+#define BG_MAP 	"../../ThirdParty/background.csv"
+#define CHAR_MAP 	"../../ThirdParty/characters.gif"
+#define ANIM_PATH	"anim.conf"
 
 #define KEY_SEEN 1
 #define KEY_RELEASED 2

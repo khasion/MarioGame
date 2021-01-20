@@ -257,9 +257,14 @@ void CollisionChecker::Cancel (Sprite* s1, Sprite* s2) {
 
 int AnimationFilmHolder::ParseEntry (
 int startPos,
-std::ifstream& text,
+std::ifstream& f,
 std::string& id,
 std::string& path,
 std::vector<Rect>& rects) {
-	
+	int x, y, w, h;
+	if (f >> id >> path >> x >> y >> w >> h) {
+		rects.push_back({x, y, w, h});
+		return 1;
+	}
+	return 0;
 }
