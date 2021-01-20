@@ -71,6 +71,13 @@ void BitmapBlit (Bitmap src, const Rect& from, Bitmap dest, const Point& to) {
 	al_set_target_bitmap((ALLEGRO_BITMAP*)prev);
 }
 
+void MaskedBlit (Bitmap src, const Rect& from, Bitmap dest, const Point& to) {
+	Bitmap prev = al_get_target_bitmap();
+	al_set_target_bitmap((ALLEGRO_BITMAP*)dest);
+	al_draw_bitmap_region((ALLEGRO_BITMAP*)src, from.x, from.y, from.w, from.h, to.x, to.y, 0);
+	al_set_target_bitmap((ALLEGRO_BITMAP*)prev);
+}
+
 void PutTile (Bitmap dest, Dim x, Dim y, Bitmap tiles, Index tile) {
 	BitmapBlit(tiles, Rect{TileX(tile), TileY(tile), 16, 16},
 	dest, Point {x, y});

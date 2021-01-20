@@ -35,17 +35,18 @@ public:
 		// TODO(4u): set a parsing functor implemented externally to the class
 	static int ParseEntry ( // -1=error, 0=ended gracefully, else #chars read
 			int startPos,
-			const std::string& text,
+			std::ifstream& text,
 			std::string& id,
 			std::string& path,
 			std::vector<Rect>& rects
 	);
-	void LoadAll (const std::string& text) {
+	void LoadAll (const std::string& path) {
 		int pos = 0;
+		std::ifstream f (path);
 		while (true) {
-			std::string id,path;
+			std::string id, path;
 			std::vector<Rect> rects;
-			auto i = ParseEntry(pos, text, id, path, rects);
+			auto i = ParseEntry(pos, f, id, path, rects);
 			assert(i >= 0);
 			if (!i) return;
 			pos += i;
@@ -293,6 +294,89 @@ public:
 	static auto GetSingletonConst (void) -> const AnimatorManager& { return singleton;}
 };
 
+class LatelyDestroyable;
+class DestructionManager {
+	std::list<LatelyDestroyable*> dead;
+	static DestructionManager singleton;
+public:
+	void Register (LatelyDestroyable* d);
+	void Commit (void);
+	static auto Get (void) -> DestructionManager& { return singleton; }
+};
+class LatelyDestroyable {
+protected:
+	friend class DestructionManager;
+	bool alive = true;
+	bool dying = false;
+	virtual ~LatelyDestroyable() { assert(dying);}
+	void Delete (void);
+public:
+	bool IsAlive (void) const { return alive;}
+	void Destroy (void) {
+		if (alive) {
+			alive = false;
+			DestructionManager::Get().Register(this);
+		}
+	}
+	LatelyDestroyable (void) = default;
+};
+
+#include <chrono>
+
+class SystemClock final {
+private:
+	std::chrono::high_resolution_clock clock;
+	static SystemClock singleton;
+public:
+	static auto Get (void) -> SystemClock& { return singleton;}
+	uint64_t		milli_secs 	(void) const;
+	uint64_t		micro_secs 	(void) const;
+	uint64_t		nano_secs 	(void) const;
+};
+
+class TickAnimation : public Animation {
+protected:
+	unsigned delay = 0;
+	unsigned reps = 1;
+	bool		isDiscrete = true;
+	bool 		Inv (void) const { return isDiscrete || reps == 1;}
+public:
+	using Me = TickAnimation;
+	unsigned 	GetDelay (void) const			{ return delay;}
+	Me&			SetDelay (unsigned v) 			{ delay = v; return*this; }
+	unsigned		GetReps(void) const				{ return reps; }
+	Me&			SetReps(unsigned n)				{ reps = n;  return*this; }
+	bool			IsForever(void) const			{ return !reps; }
+	Me&			SetForever(void) 					{ reps = 0; return*this; }
+	bool			IsDiscrete(void) const			{ return isDiscrete; }
+	Animation*	Clone (void) const override	{ return new TickAnimation(id, delay, reps, isDiscrete); }
+
+	TickAnimation (const std::string& _id, unsigned d, unsigned r, bool discrete) :
+		Animation(id), delay(d), reps(r), isDiscrete(discrete) { assert(Inv()); }
+};
+
+class TickAnimator : public Animator {
+protected:
+	TickAnimation* anim = nullptr;
+	unsigned			currRep = 0;
+	unsigned			elapsedTime = 0;
+public:
+	void		Progress (timestamp_t currTime) override;
+	unsigned	GetCurrRep (void) const { return currRep;}
+	unsigned GetElapsedTime (void) const { return elapsedTime;}
+	float		GetElapsedTimeNormalised (void) const
+					{ return float(elapsedTime) / (float)(anim->GetDelay());}
+	void 		Start (const TickAnimation& a, timestamp_t t) {
+		anim			= 	(TickAnimation*) a.Clone();
+		lastTime		=	t;
+		state			= ANIMATOR_RUNNING;
+		currRep		= 0;
+		elapsedTime	= 0;
+		NotifyStarted();
+	}
+	TickAnimator (void) = default;
+};
+
 template <typename Tnum>
 int number_sign (Tnum x) { return x > 0 ? 1 : x < 0 ? -1 : 0;}
 
@@ -314,16 +398,49 @@ public:
 	MotionQuantizer (const MotionQuantizer&) = default;
 };
 
-struct BoundingArea {
-	int x = 0, y = 0, w = 0, h = 0;
-	BoundingArea* Clone (void) const {
-		BoundingArea* b = new BoundingArea();
-		b->x = x; b->y = y; b->w = w; b->h = h;
-		return b;
-	}
+template <class T> bool clip_rect (
+	T x, 		T y, 		T w, 		T h,
+	T wx,		T wy,		T ww,		T wh,
+	T* cx,	T* cy,	T* cw,	T* ch
+);
+bool clip_rect (const Rect& r, const Rect& area, Rect* result);
+
+class Clipper {
+public:
+	using View = std::function<const Rect*(void)>;
+private:
+	View view;
+public:
+	template <typename Tfunc>
+	Clipper&	SetView (const Tfunc& f) { view = f; return *this;}
+	bool		Clip (const Rect& r, const Rect& dpyArea, Point* dpyPos, Rect* clippedBox) const;
+
+	Clipper (void) = default;
+	Clipper (const Clipper&) = default;
 };
 
-class Clipper;
+class GravityHandler {
+public:
+	using OnSolidGroundPred	= std::function<bool(const Rect&)>;
+	using OnStartFalling		= std::function<void(void)>;
+	using OnStopFalling		= std::function<void(void)>;
+protected:
+	bool						gravityAddicted 	= false;
+	bool						isFalling			= false;
+	OnSolidGroundPred		onSolidGround;
+	OnStartFalling			onStartFalling;
+	OnStopFalling			onStopFalling;
+public:
+	template <typename T> 	void SetOnStartFalling (const T& f)
+										{ onStartFalling = f;}
+	template <typename T>	void SetOnStopFalling (const T& f)
+										{ onStopFalling = f;}
+	template <typename T>	void SetOnSolidGround (const T& f)
+										{ onSolidGround = f;}
+	void Reset (void) { isFalling = false;}
+	void Check (const Rect& r);
+};
+
 class Sprite {
 public:
 	using Mover = std::function<void(const Rect&, int* dx, int* dy)>;
@@ -333,43 +450,109 @@ protected:
 	int 					x = 0, y = 0;
 	bool					isVisible = false;
 	AnimationFilm*		currFilm = nullptr;
-	BoundingArea*		boundingArea = nullptr;
+	Clipper*				boundingArea = nullptr;
 	unsigned				zorder = 0;
 	std::string			typeId, stateId;
 	Mover					mover;
 	MotionQuantizer	quantizer;
+	bool					directMotion = false;
+	GravityHandler		gravity;
 public:
 	template <typename Tfunc>
 	void 			SetMove (const Tfunc& f)
 						{ quantizer.SetMover(mover = f);}
 	const Rect	GetBox (void) const
 						{ return {x, y, frameBox.w, frameBox.h};}
-	void 			Move (int dx, int dy)
-						{ quantizer.Move(GetBox(), &dx, &dy);}
+	void 			Move (int dx, int dy) {
+						if (directMotion) {
+							x += dx; y += dy;
+						}
+						else {
+							quantizer.Move(GetBox(), &dx, &dy);
+							gravity.Check(GetBox());
+						}
+					}
 	void			SetPos (int _x, int _y) { x = _x; y = _y;}
 	void			SetZorder (unsigned z) 	{ zorder = z;}
 	unsigned		GetZorder (void)			{ return zorder;}
-	void			SetFrame (byte i) {
+
+
+	void	SetFrame (byte i) {
 		if (i != frameNo) {
 			assert(i < currFilm->GetTotalFrames());
 			frameBox = currFilm->GetFrameBox(frameNo = i);
 		}
 	}
 	byte	GetFrame (void) const { return frameNo;}
-	void	SetBoundingArea (const BoundingArea& area)
-				{ assert(!boundingArea); boundingArea = area.Clone();}
-	void	SetBoundingArea (BoundingArea* area)
+	void	SetBoundingArea (Clipper& area)
+				{ assert(!boundingArea); boundingArea = &area;}
+	void	SetBoundingArea (Clipper* area)
 				{ assert(!boundingArea); boundingArea = area;}
-	auto	GetBoundingArea (void)	 const -> const BoundingArea*
+	auto	GetBoundingArea (void)	 const -> const Clipper*
 				{ return boundingArea;}
 	auto	GetTypeId(void) -> const std::string& { return typeId; }
 	void	SetVisibility(bool v) { isVisible= v; }
 	bool	IsVisible(void) const{ return isVisible; }
 	bool 	CollisionCheck(const Sprite* s) const;
+
+	GravityHandler&	GetGravityHandler (void)
+								{ return gravity;}
+	void 					SetHasDirectMotion (bool v)		{ directMotion = v;}
+	bool					GetHasDirectMotion (void) const 	{ return directMotion;}
+
+	void PrepareSpriteGravityHandler (GridLayer* gridlayer, Sprite* sprite) {
+		sprite->GetGravityHandler().SetOnSolidGround(
+			[gridlayer](const Rect& r)
+				{ return gridlayer->IsOnSolidGround(r);}
+		);
+	}
+
 	void	Display (Bitmap dest, const Rect& dpyArea, const Clipper& clipper) const;
 	Sprite (int _x, int _y, AnimationFilm* film, const std::string& _typeId= ""):
 		x(_x), y(_y), currFilm(film), typeId (_typeId)
-		{ frameNo= currFilm->GetTotalFrames(); SetFrame(0); }
+		{ frameNo = currFilm->GetTotalFrames(); SetFrame(0); }
+};
+
+class CollisionChecker final {
+public:
+	using 	Action = std::function<void(Sprite* s1, Sprite* s2)>;
+	static	CollisionChecker singleton;
+protected:
+	using Entry = std::tuple<Sprite*, Sprite*, Action>;
+	std::list<Entry> entries;
+public:
+	template <typename T>
+	void Register (Sprite* s1, Sprite* s2, const T& f) {
+		entries.push_back(std::make_tuple(s1, s2, f));
+	}
+	void Cancel (Sprite* s1, Sprite* s2);
+	void Check	(void) const;
+
+	static auto GetSingleton (void) -> CollisionChecker&
+						{ return singleton;}
+	static auto GetSingletonConst (void) -> const CollisionChecker&
+						{ return singleton;}
+};
+
+class SpriteManager final {
+public:
+	using SpriteList	= std::list<Sprite*>;
+	using TypeLists	= std::map<std::string, SpriteList>;
+private:
+	SpriteList	dpyList;
+	TypeLists	types;
+	static SpriteManager	singleton;
+public:
+	void			Add (Sprite* s);
+	void			Remove (Sprite* s);
+	auto			GetDisplayList (void) -> const SpriteList&
+						{ return dpyList;}
+	auto 			GetTypeList (const std::string& typeId) -> const SpriteList&
+						{ return types[typeId];}
+	static auto GetSingleton (void) -> SpriteManager&
+						{ return singleton;}
+	static auto GetSingletonConst (void) -> const SpriteManager&
+						{ return singleton;}
 };
 
 void Sprite_MoveAction (Sprite* sprite, const MovingAnimation& anim);

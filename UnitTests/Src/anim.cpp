@@ -20,7 +20,7 @@ void Animator::NotifyAction (const Animation& anim) {
 		(onAction)(this, anim);
 }
 void Animator::TimeShift (timestamp_t offset) {
-	lastTime +- offset;
+	lastTime += offset;
 }
 
 void MovingAnimator::Progress (timestamp_t currTime) {
@@ -96,6 +96,46 @@ Animator::~Animator (void) {
 	AnimatorManager::GetSingleton().Cancel(this);
 }
 
+void LatelyDestroyable::Delete (void) {
+	assert(!dying); dying = true; delete this;
+}
+
+void DestructionManager::Register (LatelyDestroyable* d) {
+	assert(!d->IsAlive());
+	dead.push_back(d);
+}
+
+uint64_t SystemClock::milli_secs (void) const {
+	return std::chrono::duration_cast<std::chrono::milliseconds> (clock.now().time_since_epoch()).count();
+}
+uint64_t SystemClock::micro_secs (void) const {
+	return std::chrono::duration_cast<std::chrono::microseconds>(clock.now().time_since_epoch()).count();
+}
+uint64_t SystemClock::nano_secs (void) const {
+	return std::chrono::duration_cast<std::chrono::nanoseconds>(clock.now().time_since_epoch()).count();
+}
+uint64_t GetSystemTime (void) {
+	return SystemClock::Get().milli_secs();
+}
+
+void TickAnimator::Progress (timestamp_t currTime) {
+	if (!anim->IsDiscrete()) {
+		elapsedTime = currTime - lastTime;
+		lastTime = currTime;
+		NotifyAction(*anim);
+	}
+	else
+	while (currTime > lastTime && (currTime - lastTime) >= anim->GetDelay())   {
+		lastTime += anim->GetDelay();
+		NotifyAction(*anim);
+		if (!anim->IsForever() && ++currRep == anim->GetReps()) {
+			state = ANIMATOR_RUNNING;
+			NotifyStopped();
+			return;
+		}
+	}
+}
+
 void MotionQuantizer::Move (const Rect& r, int *dx, int *dy) {
 	if (!used) {
 		mover(r, dx, dy);
@@ -111,4 +151,115 @@ void MotionQuantizer::Move (const Rect& r, int *dx, int *dy) {
 			else 				{*dy -= dyFinal;}
 		} while (*dx || *dy);
 	}
+}
+
+template <class T> bool clip_rect (
+	T x, 		T y, 		T w, 		T h,
+	T wx,		T wy,		T ww,		T wh,
+	T* cx,	T* cy,	T* cw,	T* ch
+) {
+	*cw = T(std::min(wx + ww, x + w)) - (*cx = T(std::max(wx, x)));
+	*ch = T(std::min(wy + wh, y + h)) - (*cy = T(std::max(wy, y)));
+	return *cw > 0 && *ch > 0;
+}
+
+bool clip_rect (const Rect& r, const Rect& area, Rect* result) {
+	return clip_rect (
+		r.x,
+		r.y,
+		r.w,
+		r.h,
+		area.x,
+		area.y,
+		area.w,
+		area.h,
+		&result->x,
+		&result->y,
+		&result->w,
+		&result->h
+	);
+}
+
+bool Clipper::Clip (const Rect& r, const Rect& dpyArea, Point* dpyPos, Rect* clippedBox) const {
+	Rect visibleArea;
+	if (!clip_rect(r, *view(), &visibleArea)) 
+		{ clippedBox->w = clippedBox->h = 0; return false; }
+	else {
+		clippedBox->x = r.x - visibleArea.x;
+		clippedBox->y = r.y - visibleArea.y;
+
+		clippedBox->w = visibleArea.w;
+		clippedBox->h = visibleArea.h;
+
+		dpyPos->x = dpyArea.x + (visibleArea.x - view()->x);
+		dpyPos->y = dpyArea.y + (visibleArea.y - view()->y);
+
+		return true;
+	}
+}
+
+const Clipper MakeTileLayerClipper (TileLayer* layer) {
+	return Clipper().SetView(
+		[layer](void)
+			{ return layer->GetViewWindow();}
+	);
+}
+
+const Sprite::Mover MakeSpriteGridLayerMover (GridLayer* gridLayer, Sprite* sprite) {
+	return [gridLayer, sprite](const Rect& r, int* dx, int* dy) {
+		gridLayer->FilterGridMotion(sprite->GetBox(), dx, dy);
+	};
+}
+void Sprite::Display (Bitmap dest, const Rect& dpyArea, const Clipper& clipper) const {
+	Rect	clippedBox;
+	Point dpyPos;
+	if( clipper.Clip(GetBox(), dpyArea, &dpyPos, &clippedBox)) {
+		Rect clippedFrame{
+			frameBox.x + clippedBox.x,
+			frameBox.y + clippedBox.y,
+			clippedBox.w,
+			clippedBox.h
+		};
+		MaskedBlit(
+			currFilm->GetBitmap(),
+			clippedFrame,
+			dest,
+			dpyPos
+		);
+	}
+}
+
+void GravityHandler::Check (const Rect& r) {
+	if (gravityAddicted) {
+		if (onSolidGround(r)) {
+			if (isFalling) {
+				isFalling = false;
+				OnStopFalling();
+			}
+		}
+		else if (!isFalling) {
+			isFalling = true;
+			onStartFalling();
+		}
+	}
+}
+
+void CollisionChecker::Cancel (Sprite* s1, Sprite* s2) {
+	auto i = std::find_if(
+		entries.begin(),
+		entries.end(),
+		[s1, s2](const Entry& e) {
+			return 	std::get<0>(e) 	== s1 && std::get<1>(e) == s2 ||
+						std::get<0>(e) 	== s2 && std::get<1>(e) == s1;
+		}
+	);
+}
+
+int AnimationFilmHolder::ParseEntry (
+int startPos,
+std::ifstream& text,
+std::string& id,
+std::string& path,
+std::vector<Rect>& rects) {
+	
 }

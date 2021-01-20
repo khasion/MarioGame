@@ -6,6 +6,8 @@
 #include <functional>
 #include <map>
 #include <set>
+#include <list>
+#include <algorithm>
 #include <stdlib.h>
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
@@ -58,6 +60,10 @@ Dim		BitmapGetWidth	(Bitmap bmp);
 Dim		BitmapGetHeight(Bitmap bmp);
 void	BitmapBlit(
 						Bitmap src,  const Rect& from,
+						Bitmap dest, const Point& to
+				);
+void MaskedBlit (
+						Bitmap src, const Rect& from,
 						Bitmap dest, const Point& to
 				);
 
