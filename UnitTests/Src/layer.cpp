@@ -189,6 +189,7 @@ void TileLayer::Display(Bitmap dest, const Rect& displayArea) {
 				);
 			}
 		}
+		DisplaySprites(dpyBuffer, displayArea, tlayer);
 	}
 	BitmapBlit(dpyBuffer, {dpyX, dpyY, viewWin.w, viewWin.h},
 	dest,

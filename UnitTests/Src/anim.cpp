@@ -1,5 +1,36 @@
 #include "anim.hpp"
 
+AnimationFilmHolder 	AnimationFilmHolder::holder;
+AnimatorManager 		AnimatorManager::singleton;
+SystemClock				SystemClock::singleton;
+SpriteManager			SpriteManager::singleton;
+
+AnimationFilm::AnimationFilm (Bitmap _bitmap, const std::vector<Rect>& _boxes, const std::string& _id) {
+	SetBitmap(_bitmap);
+	Append(_boxes[0]);
+	id = _id;
+}
+
+int AnimationFilmHolder::ParseEntry (
+int startPos,
+std::ifstream& f,
+std::string& id,
+std::string& path,
+std::vector<Rect>& rects) {
+	int c, x, y, w, h;
+	if (f >> c >> id >> path) {
+		std::cout << id << " " << path;
+		while (c--) {
+			f >> x >> y >> w >> h;
+			std::cout << ", " << x << " " << y << " " << w << " " << h;
+			rects.push_back({x, y, w, h});
+		}
+		std::cout << std::endl;
+		return 1;
+	}
+	return 0;
+}
+
 void Animator::Finish (bool isForced) {
 	if (!HasFinished()) {
 		state = isForced ? ANIMATOR_STOPPED : ANIMATOR_FINISHED;
@@ -182,7 +213,7 @@ bool clip_rect (const Rect& r, const Rect& area, Rect* result) {
 
 bool Clipper::Clip (const Rect& r, const Rect& dpyArea, Point* dpyPos, Rect* clippedBox) const {
 	Rect visibleArea;
-	if (!clip_rect(r, *view(), &visibleArea)) 
+	if (!clip_rect(r, viewRect, &visibleArea)) 
 		{ clippedBox->w = clippedBox->h = 0; return false; }
 	else {
 		clippedBox->x = r.x - visibleArea.x;
@@ -191,18 +222,16 @@ bool Clipper::Clip (const Rect& r, const Rect& dpyArea, Point* dpyPos, Rect* cli
 		clippedBox->w = visibleArea.w;
 		clippedBox->h = visibleArea.h;
 
-		dpyPos->x = dpyArea.x + (visibleArea.x - view()->x);
-		dpyPos->y = dpyArea.y + (visibleArea.y - view()->y);
+		dpyPos->x = dpyArea.x + (visibleArea.x - viewRect.x);
+		dpyPos->y = dpyArea.y + (visibleArea.y - viewRect.y);
 
 		return true;
 	}
 }
 
-const Clipper MakeTileLayerClipper (TileLayer* layer) {
-	return Clipper().SetView(
-		[layer](void)
-			{ return layer->GetViewWindow();}
-	);
+const Clipper& MakeTileLayerClipper (TileLayer* layer) {
+	Clipper* c = new Clipper();
+	return c->SetView(layer->GetViewWindow());
 }
 
 const Sprite::Mover MakeSpriteGridLayerMover (GridLayer* gridLayer, Sprite* sprite) {
@@ -213,6 +242,7 @@ const Sprite::Mover MakeSpriteGridLayerMover (GridLayer* gridLayer, Sprite* spri
 void Sprite::Display (Bitmap dest, const Rect& dpyArea, const Clipper& clipper) const {
 	Rect	clippedBox;
 	Point dpyPos;
+	Rect clippedFrame;
 	if( clipper.Clip(GetBox(), dpyArea, &dpyPos, &clippedBox)) {
 		Rect clippedFrame{
 			frameBox.x + clippedBox.x,
@@ -255,16 +285,14 @@ void CollisionChecker::Cancel (Sprite* s1, Sprite* s2) {
 	);
 }
 
-int AnimationFilmHolder::ParseEntry (
-int startPos,
-std::ifstream& f,
-std::string& id,
-std::string& path,
-std::vector<Rect>& rects) {
-	int x, y, w, h;
-	if (f >> id >> path >> x >> y >> w >> h) {
-		rects.push_back({x, y, w, h});
-		return 1;
+void SpriteManager::Add (Sprite* s) {
+	dpyList.push_back(s);
+}
+
+void DisplaySprites (Bitmap dest, const Rect& dpyArea, TileLayer* tlayer) {
+	auto dpyList = SpriteManager::GetSingleton().GetDisplayList();
+	for (auto it = dpyList.begin(); it != dpyList.end(); ++it) {
+		const Clipper& clipper = MakeTileLayerClipper(tlayer);
+		(*it)->Display(dest, dpyArea, clipper);
 	}
-	return 0;
 }

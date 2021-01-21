@@ -27,7 +27,7 @@ typedef struct {
 	bool done = false;
 	unsigned char key[ALLEGRO_KEY_MAX];
 }ALLEGRO;
-
+;
 extern ALLEGRO al;
 
 /* Display.*/

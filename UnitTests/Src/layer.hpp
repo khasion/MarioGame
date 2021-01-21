@@ -112,7 +112,7 @@ public:
 	const Point Pick (Dim x, Dim y) const {
 		return {DIV_TILE_WIDTH(x + viewWin.x), DIV_TILE_HEIGHT(y + viewWin.y)};
 	}
-	const Rect& GetViewWindow (void) const { return viewWin;}
+	const Rect& GetViewWindow (void) { return viewWin;}
 	void 	SetViewWindow (const Rect& r) { viewWin = r; dpyChanged = true;}
 	void 	Display (Bitmap dest, const Rect& displayArea);
 
@@ -140,6 +140,7 @@ public:
 	~TileLayer ();
 };
  
+extern void DisplaySprites (Bitmap, const Rect&, TileLayer*);
 extern TileLayer* tlayer;
 
 #endif

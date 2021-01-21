@@ -29,14 +29,12 @@ int main()
 	game.setUser(user);
 	game.setDone(done);
 	app.Main();
-
 	return 0;
 }
 
 void render (void) {
 	if (al_is_event_queue_empty(al.queue)) {
 		tlayer->Display(al_get_target_bitmap(), Rect {0, 0, 0, 0});
-		al_draw_circle(Player.x, Player.y, 16/2, al_map_rgba_f(0, 0, 0.5, 0.5), 1);
 		al_flip_display();
 	}
 }
@@ -67,21 +65,25 @@ void input (void) {
 			if (al.key[ALLEGRO_KEY_A]) {
 				dx = -1; dy = 0;
 				tlayer->GetGridLayer()->FilterGridMotion(Player, &dx, &dy);
+				mario->Move(dx, dy);
 				Player.x += dx;
 			}
 			if (al.key[ALLEGRO_KEY_D]) {
 				dx = 1; dy = 0;
 				tlayer->GetGridLayer()->FilterGridMotion(Player, &dx, &dy);
+				mario->Move(dx, dy);
 				Player.x += dx;
 			}
 			if (al.key[ALLEGRO_KEY_W]) {
 				dx = 0; dy = -1;
 				tlayer->GetGridLayer()->FilterGridMotion(Player, &dx, &dy);
+				mario->Move(dx, dy);
 				Player.y += dy;
 			}
 			if (al.key[ALLEGRO_KEY_S]) {
 				dx = 0; dy = 1;
 				tlayer->GetGridLayer()->FilterGridMotion(Player, &dx, &dy);
+				mario->Move(dx, dy);
 				Player.y += dy;
 			}
 			for (int i = 0; i < ALLEGRO_KEY_MAX; i++) {

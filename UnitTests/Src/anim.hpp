@@ -16,7 +16,7 @@ public:
 		BitmapBlit (bitmap, GetFrameBox(frameNo), dest, at);
 	}
 	void SetBitmap (Bitmap b) {
-		assert(!b); bitmap = b;
+		assert(b); bitmap = b;
 	}
 	void Append (const Rect& r) { boxes.push_back(r);}
 	AnimationFilm (const std::string& _id) : id (_id) {}
@@ -24,14 +24,21 @@ public:
 };
 
 class AnimationFilmHolder {
+public:
 	using Films = std::map<std::string, AnimationFilm*>;
+private:
 	Films films;
 	BitmapLoader bitmaps;// only for loading of film bitmaps 
 	static AnimationFilmHolder holder;// singleton
 	AnimationFilmHolder (void) {}
-	~AnimationFilmHolder() { bitmaps.CleanUp();}
+	~AnimationFilmHolder() {bitmaps.CleanUp();}
 public:
-	static auto Get (void) -> const AnimationFilmHolder& { return holder; }
+	static AnimationFilmHolder& Get (void) {
+		return holder;
+	}
+	static void Destroy (void) {
+		delete &holder;
+	}
 		// TODO(4u): set a parsing functor implemented externally to the class
 	static int ParseEntry ( // -1=error, 0=ended gracefully, else #chars read
 			int startPos,
@@ -48,11 +55,19 @@ public:
 			std::vector<Rect> rects;
 			auto i = ParseEntry(pos, f, id, path, rects);
 			assert(i >= 0);
-			if (!i) return;
+			if (!i) {break;}
+			/*std::cout << pos << " " << id << " " << path;
+			for (auto it = rects.begin(); it != rects.end(); ++it) {
+				std::cout << ", " << (*it).x << " " << (*it).y << " " << (*it).w << " " << (*it).h;
+			}
+			std::cout << std::endl;*/
 			pos += i;
 			assert(!films[id]);
 			films[id] = new AnimationFilm(bitmaps.Load(path), rects, id);
 		}
+	}
+	AnimationFilm* GetAnimationFilm (std::string id) {
+		return films[id];
 	}
 };
 
@@ -406,13 +421,10 @@ template <class T> bool clip_rect (
 bool clip_rect (const Rect& r, const Rect& area, Rect* result);
 
 class Clipper {
-public:
-	using View = std::function<const Rect*(void)>;
 private:
-	View view;
+	Rect viewRect;
 public:
-	template <typename Tfunc>
-	Clipper&	SetView (const Tfunc& f) { view = f; return *this;}
+	Clipper&	SetView (const Rect& r) { viewRect = r; return *this;}
 	bool		Clip (const Rect& r, const Rect& dpyArea, Point* dpyPos, Rect* clippedBox) const;
 
 	Clipper (void) = default;
@@ -470,6 +482,7 @@ public:
 						else {
 							quantizer.Move(GetBox(), &dx, &dy);
 							gravity.Check(GetBox());
+							x += dx; y += dy;
 						}
 					}
 	void			SetPos (int _x, int _y) { x = _x; y = _y;}
@@ -508,6 +521,7 @@ public:
 	}
 
 	void	Display (Bitmap dest, const Rect& dpyArea, const Clipper& clipper) const;
+
 	Sprite (int _x, int _y, AnimationFilm* film, const std::string& _typeId= ""):
 		x(_x), y(_y), currFilm(film), typeId (_typeId)
 		{ frameNo = currFilm->GetTotalFrames(); SetFrame(0); }
@@ -555,6 +569,8 @@ public:
 						{ return singleton;}
 };
 
+const Sprite::Mover MakeSpriteGridLayerMover (GridLayer*, Sprite*);
 void Sprite_MoveAction (Sprite* sprite, const MovingAnimation& anim);
+void DisplaySprites (Bitmap, const Rect&, TileLayer*);
 
 #endif

@@ -2,6 +2,8 @@
 #define APP_HPP
 #include "game.hpp"
 
+extern Sprite* mario;
+
 namespace app {
 	class App {
 		protected:
