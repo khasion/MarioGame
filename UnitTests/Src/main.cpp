@@ -1,6 +1,7 @@
 #include "app.hpp"
 
-int dx = 0, dy = 0;
+int dx = 0, dy = 0, fw = 1;
+float g = 0.1;
 
 void render (void);
 void anim (void);
@@ -46,36 +47,23 @@ void input (void) {
 	switch (al.event.type) {
 		case ALLEGRO_EVENT_TIMER:
 			if (al.key[ALLEGRO_KEY_UP]) {
-				dx = 0 ;dy = -1;
-				mario->Move(dx, dy);
-				tlayer->Scroll(dx, dy);
-			}
-			if (al.key[ALLEGRO_KEY_DOWN]) {
-				dx = 0 ; dy = 1;
-				mario->Move(dx, dy);
-				tlayer->Scroll(dx, dy);
+				if (!mario->GetGravityHandler().IsFalling()) {
+					dx = 0 ;dy = -5;
+					mario->Move(dx, dy);
+					tlayer->Scroll(dx, dy);
+				}
 			}
 			if (al.key[ALLEGRO_KEY_LEFT]) {
-				dx = -1; dy = 0;
-				mario->Move(dx, dy);
+				dx = -1;
+				mario->GetQuantizer().Move(mario->GetBox(), &dx, &dy);
+				mario->Move(dx, 0);
 				tlayer->Scroll(dx, dy);
 			}
 			if (al.key[ALLEGRO_KEY_RIGHT]) {
-				dx = 1; dy = 0;
-				mario->Move(dx, dy);
+				dx = 1;
+				mario->GetQuantizer().Move(mario->GetBox(), &dx, &dy);
+				mario->Move(dx, 0);
 				tlayer->Scroll(dx, dy);
-			}
-			if (al.key[ALLEGRO_KEY_A]) {
-				dx = -1; dy = 0;
-			}
-			if (al.key[ALLEGRO_KEY_D]) {
-				dx = 1; dy = 0;
-			}
-			if (al.key[ALLEGRO_KEY_W]) {
-				dx = 0; dy = -1;
-			}
-			if (al.key[ALLEGRO_KEY_S]) {
-				dx = 0; dy = 1;
 			}
 			for (int i = 0; i < ALLEGRO_KEY_MAX; i++) {
 				al.key[i] &= KEY_SEEN;
@@ -97,7 +85,11 @@ void ai (void) {
 
 }
 void physics (void) {
-
+	if (mario->GetGravityHandler().IsFalling()) {
+		mario->Move(0, dy+g);
+		g += 0.1;
+	}
+	else { g = 1; dy = 0;}
 }
 void destruct (void) {
 

@@ -451,6 +451,7 @@ public:
 										{ onSolidGround = f;}
 	void Reset (void) { isFalling = false;}
 	void Check (const Rect& r);
+	bool IsFalling (void) { return isFalling;}
 };
 
 class Sprite {
@@ -569,6 +570,8 @@ public:
 	static auto GetSingletonConst (void) -> const SpriteManager&
 						{ return singleton;}
 };
+
+void FrameRange_Action (Sprite* sprite, Animator* animator, const FrameRangeAnimation& anim);
 
 const Sprite::Mover MakeSpriteGridLayerMover (GridLayer*, Sprite*);
 void Sprite_MoveAction (Sprite* sprite, const MovingAnimation& anim);
