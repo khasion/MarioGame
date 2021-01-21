@@ -51,22 +51,23 @@ void App::Load (void) {
 	mario->PrepareSpriteGravityHandler(tlayer->GetGridLayer(), mario);
 	mario->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), mario));
 	mario->GetGravityHandler().SetOnSolidGround([](const Rect& r) {
-		mario->Move(0, 1);
-		return true;
+		int dx = 0, dy = 1;
+		mario->GetQuantizer().Move(r, &dx, &dy);
+		return (!dy) ? true : false;
 	});
 	mario->GetGravityHandler().SetOnStartFalling([]() {
-		mario->Move(0, 1);
+		std::cout << "start falling." << std::endl;
 	});
 	mario->GetGravityHandler().SetOnStopFalling([]() {
-		mario->Move(0, 0);
+		std::cout << "stop falling." << std::endl;
 	});
-
+	mario->SetPos(320, 480-48);
 	SpriteManager::GetSingleton().Add(mario);
 }
 
 void App::Clear (void) {
 	AnimationFilmHolder::Get().Destroy();
-	std::cout << "ASDADS1" << std::endl;
+	std::cout << "EDW TRWEI SEG" << std::endl;
 	free(al.monitor);
 	al_destroy_font(al.font);
 	al_destroy_display(al.disp);

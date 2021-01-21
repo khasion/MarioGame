@@ -1,7 +1,6 @@
 #include "app.hpp"
 
 int dx = 0, dy = 0;
-Rect Player {0, 0, 16, 16};
 
 void render (void);
 void anim (void);
@@ -48,43 +47,35 @@ void input (void) {
 		case ALLEGRO_EVENT_TIMER:
 			if (al.key[ALLEGRO_KEY_UP]) {
 				dx = 0 ;dy = -1;
+				mario->Move(dx, dy);
 				tlayer->Scroll(dx, dy);
 			}
 			if (al.key[ALLEGRO_KEY_DOWN]) {
 				dx = 0 ; dy = 1;
+				mario->Move(dx, dy);
 				tlayer->Scroll(dx, dy);
 			}
 			if (al.key[ALLEGRO_KEY_LEFT]) {
 				dx = -1; dy = 0;
+				mario->Move(dx, dy);
 				tlayer->Scroll(dx, dy);
 			}
 			if (al.key[ALLEGRO_KEY_RIGHT]) {
 				dx = 1; dy = 0;
+				mario->Move(dx, dy);
 				tlayer->Scroll(dx, dy);
 			}
 			if (al.key[ALLEGRO_KEY_A]) {
 				dx = -1; dy = 0;
-				tlayer->GetGridLayer()->FilterGridMotion(Player, &dx, &dy);
-				mario->Move(dx, dy);
-				Player.x += dx;
 			}
 			if (al.key[ALLEGRO_KEY_D]) {
 				dx = 1; dy = 0;
-				tlayer->GetGridLayer()->FilterGridMotion(Player, &dx, &dy);
-				mario->Move(dx, dy);
-				Player.x += dx;
 			}
 			if (al.key[ALLEGRO_KEY_W]) {
 				dx = 0; dy = -1;
-				tlayer->GetGridLayer()->FilterGridMotion(Player, &dx, &dy);
-				mario->Move(dx, dy);
-				Player.y += dy;
 			}
 			if (al.key[ALLEGRO_KEY_S]) {
 				dx = 0; dy = 1;
-				tlayer->GetGridLayer()->FilterGridMotion(Player, &dx, &dy);
-				mario->Move(dx, dy);
-				Player.y += dy;
 			}
 			for (int i = 0; i < ALLEGRO_KEY_MAX; i++) {
 				al.key[i] &= KEY_SEEN;

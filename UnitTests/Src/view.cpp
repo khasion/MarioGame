@@ -4,6 +4,9 @@ ALLEGRO al;
 
 // Display routines
 bool Open (Dim rw, Dim rh, BitDepth depth) {
+	al_set_new_display_option(ALLEGRO_SAMPLE_BUFFERS, 1, ALLEGRO_SUGGEST);
+	al_set_new_display_option(ALLEGRO_SAMPLES, 8, ALLEGRO_SUGGEST);
+	al_set_new_bitmap_flags(ALLEGRO_MIN_LINEAR | ALLEGRO_MAG_LINEAR);
 	al_set_new_display_option(ALLEGRO_COLOR_SIZE, depth, ALLEGRO_SUGGEST);
 	al.disp = al_create_display(rw, rh);
 	al.monitor = (ALLEGRO_MONITOR_INFO*) malloc(sizeof(ALLEGRO_MONITOR_INFO));

@@ -437,7 +437,7 @@ public:
 	using OnStartFalling		= std::function<void(void)>;
 	using OnStopFalling		= std::function<void(void)>;
 protected:
-	bool						gravityAddicted 	= false;
+	bool						gravityAddicted 	= true;
 	bool						isFalling			= false;
 	OnSolidGroundPred		onSolidGround;
 	OnStartFalling			onStartFalling;
@@ -489,6 +489,7 @@ public:
 	void			SetZorder (unsigned z) 	{ zorder = z;}
 	unsigned		GetZorder (void)			{ return zorder;}
 
+	MotionQuantizer& GetQuantizer (void) { return quantizer;}
 
 	void	SetFrame (byte i) {
 		if (i != frameNo) {

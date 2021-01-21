@@ -4,7 +4,7 @@
 
 #define DISP_W 640
 #define DISP_H 480
-#define MAX_FPS 200 
+#define MAX_FPS 60 
 #define FPS 1.0 / MAX_FPS
 
 #define TILE_MAP 	"../../ThirdParty/action.csv"

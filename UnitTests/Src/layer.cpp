@@ -189,11 +189,11 @@ void TileLayer::Display(Bitmap dest, const Rect& displayArea) {
 				);
 			}
 		}
-		DisplaySprites(dpyBuffer, displayArea, tlayer);
 	}
 	BitmapBlit(dpyBuffer, {dpyX, dpyY, viewWin.w, viewWin.h},
 	dest,
 	{ displayArea.x, displayArea.y});
+	DisplaySprites(dest, displayArea, tlayer);
 }
 
 TileLayer::TileLayer (Dim _rows, Dim _cols, Bitmap _tileset) {
