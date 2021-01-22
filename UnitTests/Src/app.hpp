@@ -1,8 +1,10 @@
 #ifndef APP_HPP
 #define APP_HPP
 #include "game.hpp"
+#include "entities.hpp"
 
 extern Sprite* mario;
+extern Entity* goomba;
 
 namespace app {
 	class App {
@@ -27,4 +29,7 @@ namespace app {
 		}
 	};
 }
+
+void InitPlayer ();
+void InitEnemies ();
 #endif

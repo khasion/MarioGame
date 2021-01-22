@@ -7,7 +7,7 @@ SpriteManager			SpriteManager::singleton;
 
 AnimationFilm::AnimationFilm (Bitmap _bitmap, const std::vector<Rect>& _boxes, const std::string& _id) {
 	SetBitmap(_bitmap);
-	Append(_boxes[0]);
+	boxes = _boxes;
 	id = _id;
 }
 
@@ -264,7 +264,7 @@ void GravityHandler::Check (const Rect& r) {
 		if (onSolidGround(r)) {
 			if (isFalling) {
 				isFalling = false;
-				OnStopFalling();
+				onStopFalling();
 			}
 		}
 		else if (!isFalling) {

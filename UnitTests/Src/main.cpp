@@ -40,7 +40,7 @@ void render (void) {
 }
 
 void anim (void) {
-
+	AnimatorManager::GetSingleton().Progress(std::time(nullptr));
 }
 
 void input (void) {
@@ -48,7 +48,7 @@ void input (void) {
 		case ALLEGRO_EVENT_TIMER:
 			if (al.key[ALLEGRO_KEY_UP]) {
 				if (!mario->GetGravityHandler().IsFalling()) {
-					dx = 0 ;dy = -5;
+					dy = -5;
 					mario->Move(dx, dy);
 					tlayer->Scroll(dx, dy);
 				}

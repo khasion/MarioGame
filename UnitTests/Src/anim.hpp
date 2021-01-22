@@ -3,9 +3,9 @@
 #include "layer.hpp"
 
 class AnimationFilm {
-	std::vector<Rect> boxes;
-	Bitmap				bitmap = nullptr;
-	std::string			id;
+	std::vector<Rect> 	boxes;
+	Bitmap					bitmap = nullptr;
+	std::string				id;
 public:
 	byte 		GetTotalFrames (void) const 	{ return boxes.size();}
 	Bitmap	GetBitmap (void) const 			{ return bitmap;}
@@ -19,7 +19,6 @@ public:
 		assert(b); bitmap = b;
 	}
 	void Append (const Rect& r) { boxes.push_back(r);}
-	AnimationFilm (const std::string& _id) : id (_id) {}
 	AnimationFilm (Bitmap, const std::vector<Rect>&, const std::string&);
 };
 
@@ -115,14 +114,14 @@ public:
 	Me&			SetStartFrame (unsigned v)	{ start = v; return *this;}
 	unsigned		GetEndFrame (void) const	{ return end;}
 	Me&			SetEndFrame (unsigned v)	{ end = v; return *this;}
-	Animation*	Clone (void) const override{
+	Animation*	Clone (void) const override {
 		return new FrameRangeAnimation (id, start, end, GetReps(), GetDx(), GetDy(), GetDelay());
 	}
 	FrameRangeAnimation (
 		const std::string& _id,
 		unsigned s, unsigned e,
 		unsigned r, int dx, int dy, int d
-	): start(s), end(e), MovingAnimation(id, r, dx, dy, d) {}
+	): start(s), end(e), MovingAnimation(_id, r, dx, dy, d) {}
 };
 
 class FrameListAnimation : public MovingAnimation {
@@ -142,7 +141,7 @@ public:
 		const std::string& _id,
 		const Frames& _frames,
 		unsigned r, int dx, int dy, unsigned d
-	): frames(_frames), MovingAnimation(id, r, dx, dy, d) {}
+	): frames(_frames), MovingAnimation(_id, r, dx, dy, d) {}
 };
 
 struct PathEntry {
@@ -367,7 +366,7 @@ public:
 	Animation*	Clone (void) const override	{ return new TickAnimation(id, delay, reps, isDiscrete); }
 
 	TickAnimation (const std::string& _id, unsigned d, unsigned r, bool discrete) :
-		Animation(id), delay(d), reps(r), isDiscrete(discrete) { assert(Inv()); }
+		Animation(_id), delay(d), reps(r), isDiscrete(discrete) { assert(Inv()); }
 };
 
 class TickAnimator : public Animator {
@@ -489,6 +488,9 @@ public:
 	void			SetPos (int _x, int _y) { x = _x; y = _y;}
 	void			SetZorder (unsigned z) 	{ zorder = z;}
 	unsigned		GetZorder (void)			{ return zorder;}
+
+	AnimationFilm* GetAnimFilm (void)					{ return currFilm;}
+	void				SetAnimFilm (AnimationFilm* film){ currFilm = film;}
 
 	MotionQuantizer& GetQuantizer (void) { return quantizer;}
 
