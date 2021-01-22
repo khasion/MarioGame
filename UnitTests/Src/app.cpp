@@ -69,14 +69,16 @@ void InitPlayer () {
 	AnimationFilm* jumpingl 	= AnimationFilmHolder::Get().GetAnimationFilm("mario_jumpingl");
 	AnimationFilm* jumpingr 	= AnimationFilmHolder::Get().GetAnimationFilm("mario_jumpingr");
 
-	mario = new Sprite(320, 480-50, standingr, "MARIO");
+	mario = new Sprite(320, 480-50, runningr, "MARIO");
 	SpriteManager::GetSingleton().Add(mario);
 
 	FrameRangeAnimator* mario_animator = new FrameRangeAnimator();
 	mario_animator->SetOnAction(
-	[](Animator* animator, const Animation& anim) {
-		FrameRange_Action(mario, animator, (const FrameRangeAnimation&) anim);
-	});
+		[](Animator* animator, const Animation& anim) {
+			FrameRange_Action(mario, animator, (const FrameRangeAnimation&) anim);
+		});
+	FrameRangeAnimation* framerange = new FrameRangeAnimation("mario_standl", 0, 1, 100, 0, 0, 1);
+	mario_animator->Start(framerange, std::time(nullptr));
 
 	mario->PrepareSpriteGravityHandler(tlayer->GetGridLayer(), mario);
 	mario->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), mario));
@@ -87,13 +89,11 @@ void InitPlayer () {
 	});
 	mario->GetGravityHandler().SetOnStartFalling(
 	[jumpingl, mario_animator]() {
-		mario->SetAnimFilm(jumpingl);
 		mario_animator->Start((FrameRangeAnimation*)jumpingl, std::time(nullptr));
 		std::cout << "start falling." << std::endl;
 	});
 	mario->GetGravityHandler().SetOnStopFalling(
 	[standingl, mario_animator]() {
-		mario->SetAnimFilm(standingl);
 		mario_animator->Start((FrameRangeAnimation*)standingl, std::time(nullptr));
 		std::cout << "stop falling." << std::endl;
 	});

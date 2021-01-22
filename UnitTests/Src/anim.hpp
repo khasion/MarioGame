@@ -13,7 +13,7 @@ public:
 	const Rect& GetFrameBox (byte frameNo) const 
 						{ assert(boxes.size()>frameNo); return boxes[frameNo];}
 	void DisplayFrame (Bitmap dest, const Point& at, byte frameNo) const {
-		BitmapBlit (bitmap, GetFrameBox(frameNo), dest, at);
+		MaskedBlit (bitmap, GetFrameBox(frameNo), dest, at);
 	}
 	void SetBitmap (Bitmap b) {
 		assert(b); bitmap = b;
@@ -55,11 +55,6 @@ public:
 			auto i = ParseEntry(pos, f, id, path, rects);
 			assert(i >= 0);
 			if (!i) {break;}
-			/*std::cout << pos << " " << id << " " << path;
-			for (auto it = rects.begin(); it != rects.end(); ++it) {
-				std::cout << ", " << (*it).x << " " << (*it).y << " " << (*it).w << " " << (*it).h;
-			}
-			std::cout << std::endl;*/
 			pos += i;
 			assert(!films[id]);
 			films[id] = new AnimationFilm(bitmaps.Load(path), rects, id);
@@ -279,6 +274,7 @@ public:
 		NotifyStarted();
 		NotifyAction(*anim);
 	}
+	FrameRangeAnimation* GetAnim (void) { return anim;}
 	FrameRangeAnimator (void) = default;
 };
 
@@ -380,7 +376,7 @@ public:
 	unsigned GetElapsedTime (void) const { return elapsedTime;}
 	float		GetElapsedTimeNormalised (void) const
 					{ return float(elapsedTime) / (float)(anim->GetDelay());}
-	void 		Start (const TickAnimation& a, timestamp_t t) {
+	void 		Start (TickAnimation& a, timestamp_t t) {
 		anim			= 	(TickAnimation*) a.Clone();
 		lastTime		=	t;
 		state			= ANIMATOR_RUNNING;
