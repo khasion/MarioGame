@@ -3,7 +3,7 @@
 #include "game.hpp"
 #include "entities.hpp"
 
-extern Sprite* mario;
+extern Entity* player;
 extern Entity* goomba;
 
 namespace app {

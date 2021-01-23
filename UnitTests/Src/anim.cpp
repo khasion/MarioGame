@@ -287,6 +287,14 @@ void CollisionChecker::Cancel (Sprite* s1, Sprite* s2) {
 
 void SpriteManager::Add (Sprite* s) {
 	dpyList.push_back(s);
+	dpyList.sort(
+		[](Sprite* first, Sprite* sec) {
+			return (first->GetZorder() < sec->GetZorder());
+		}
+	);
+	for (auto it = dpyList.cbegin(); it != dpyList.cend(); ++it) {
+		types[(*it)->GetTypeId()].push_back((*it));
+	}
 }
 
 void DisplaySprites (Bitmap dest, const Rect& dpyArea, TileLayer* tlayer) {

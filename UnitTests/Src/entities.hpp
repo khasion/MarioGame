@@ -5,13 +5,15 @@
 class Entity {
 public:
 	using OnJump = std::function<void(int, int)>;
-	using OnMove = std::function<void(int, int)>;
+	using OnMove = std::function<void(int*, int*)>;
 	using OnDeath = std::function<void(int, int)>;
 private:
-	std::string type;
+	Sprite*		sprite = nullptr;
+	Animator*	animator = nullptr;
 	OnJump 		onJump;
 	OnMove 		onMove;
 	OnDeath		onDeath;
+	int			dx = 0, dy = 0;
 	int 			lives = 1;
 public:
 	template <typename T>
@@ -21,14 +23,24 @@ public:
 	template <typename T>
 	void SetOnDeath (const T& f)	{ onDeath = f;}
 
-	void 	Move (int dx, int dy);
+	void 	Move (int* dx, int* dy);
 	void 	Jump (int dx, int dy);
 	void 	Kill (int dx, int dy);
+
+	Sprite*	GetSprite (void)			{ return sprite;}
+	void		SetSprite (Sprite* s)	{ sprite = s;}
 
 	int 	GetLives (void) 	{ return lives;}
 	void 	SetLives (int l)	{ lives = l;}
 
-	Entity (int _lives) : lives(_lives) {}
+	void 			SetAnimator (Animator* anim);
+	Animator*	GetAnimator (void) { return animator;}
+
+	int	GetDx (void)	{ return dx;}
+	int	GetDy (void)	{ return dy;}
+
+	Entity (Sprite* _s, int _lives) : 
+		sprite(_s), lives(_lives) {}
 };
 
 class EntityManager {

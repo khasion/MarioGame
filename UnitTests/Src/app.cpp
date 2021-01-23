@@ -1,7 +1,7 @@
 #include "app.hpp"
 using namespace app;
 
-Sprite* mario;
+Entity* player;
 
 void must_init(bool test, const char *description)
 {
@@ -62,39 +62,84 @@ void App::Clear (void) {
 }
 
 void InitPlayer () {
-	AnimationFilm* standingl 	= AnimationFilmHolder::Get().GetAnimationFilm("mario_standl");
-	AnimationFilm* standingr	= AnimationFilmHolder::Get().GetAnimationFilm("mario_standr");
-	AnimationFilm* runningl 	= AnimationFilmHolder::Get().GetAnimationFilm("mario_runningl");
-	AnimationFilm* runningr 	= AnimationFilmHolder::Get().GetAnimationFilm("mario_runningr");
-	AnimationFilm* jumpingl 	= AnimationFilmHolder::Get().GetAnimationFilm("mario_jumpingl");
-	AnimationFilm* jumpingr 	= AnimationFilmHolder::Get().GetAnimationFilm("mario_jumpingr");
-
-	mario = new Sprite(320, 480-50, runningr, "MARIO");
+	Sprite* mario = new Sprite(
+		320,
+		480-50,
+		AnimationFilmHolder::Get().GetAnimationFilm("mario_standl"),
+		"MARIO"
+	);
 	SpriteManager::GetSingleton().Add(mario);
-
-	FrameRangeAnimator* mario_animator = new FrameRangeAnimator();
-	mario_animator->SetOnAction(
-		[](Animator* animator, const Animation& anim) {
-			FrameRange_Action(mario, animator, (const FrameRangeAnimation&) anim);
-		});
-	FrameRangeAnimation* framerange = new FrameRangeAnimation("mario_standl", 0, 1, 100, 0, 0, 1);
-	mario_animator->Start(framerange, std::time(nullptr));
 
 	mario->PrepareSpriteGravityHandler(tlayer->GetGridLayer(), mario);
 	mario->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), mario));
-	mario->GetGravityHandler().SetOnSolidGround([](const Rect& r) {
+	mario->GetGravityHandler().SetOnSolidGround(
+	[mario](const Rect& r) {
 		int dx = 0, dy = 1;
 		mario->GetQuantizer().Move(r, &dx, &dy);
 		return (!dy) ? true : false;
 	});
 	mario->GetGravityHandler().SetOnStartFalling(
-	[jumpingl, mario_animator]() {
-		mario_animator->Start((FrameRangeAnimation*)jumpingl, std::time(nullptr));
+	[]() {
 		std::cout << "start falling." << std::endl;
 	});
 	mario->GetGravityHandler().SetOnStopFalling(
-	[standingl, mario_animator]() {
-		mario_animator->Start((FrameRangeAnimation*)standingl, std::time(nullptr));
+	[]() {
 		std::cout << "stop falling." << std::endl;
 	});
+	player = new Entity(mario, 1);
+	player->SetOnMove (
+		[](int* dx, int* dy) {
+			Sprite* mario = player->GetSprite();
+			mario->GetQuantizer().Move(mario->GetBox(), dx, dy);
+			mario->Move(*dx, *dy);
+			FrameRangeAnimator* newanimator = new FrameRangeAnimator();
+			FrameRangeAnimation* newanimation;
+			if (*dx < 0) {
+				if (*dy != 0) {
+					mario->SetAnimFilm(
+						AnimationFilmHolder::Get().GetAnimationFilm("mario_jumpingl")
+					);
+					newanimation = new FrameRangeAnimation("mario_jumpingl", 0, 0, 1, 0, 0, 1);
+				}
+				else {
+					mario->SetAnimFilm(
+						AnimationFilmHolder::Get().GetAnimationFilm("mario_runningl")
+					);
+					newanimation = new FrameRangeAnimation("mario_runningl", 0, 2, 2, *dx, *dy, 1);
+				}
+			}
+			else if (*dx > 0) {
+				if (*dy != 0) {
+					mario->SetAnimFilm(
+						AnimationFilmHolder::Get().GetAnimationFilm("mario_jumpingr")
+					);
+					newanimation = new FrameRangeAnimation("mario_jumpingr", 0, 0, 1, 0, 0, 1);
+				}
+				else {
+					mario->SetAnimFilm(
+						AnimationFilmHolder::Get().GetAnimationFilm("mario_runningr")
+					);
+					newanimation = new FrameRangeAnimation("mario_runningr", 0, 2, 2, *dx, *dy, 1);
+				}
+			}
+			else {
+				if (player->GetSprite()->GetAnimFilm()->GetId().compare("mario_runningr") == 0
+				|| player->GetSprite()->GetAnimFilm()->GetId().compare("mario_jumpingr") == 0) {
+
+					mario->SetAnimFilm(
+						AnimationFilmHolder::Get().GetAnimationFilm("mario_standr")
+					);
+					newanimation = new FrameRangeAnimation("mario_standr", 0, 0, 1, 0, 0, 0);
+				}
+				else {
+					mario->SetAnimFilm(
+						AnimationFilmHolder::Get().GetAnimationFilm("mario_standl")
+					);
+					newanimation = new FrameRangeAnimation("mario_standl", 0, 0, 1, 0, 0, 0);
+				}
+			}
+			player->SetAnimator(newanimator);
+			newanimator->Start(newanimation, std::time(nullptr));
+		}
+	);
 }

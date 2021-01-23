@@ -486,7 +486,8 @@ public:
 	unsigned		GetZorder (void)			{ return zorder;}
 
 	AnimationFilm* GetAnimFilm (void)					{ return currFilm;}
-	void				SetAnimFilm (AnimationFilm* film){ currFilm = film;}
+	void				SetAnimFilm (AnimationFilm* film)
+							{ currFilm = film; frameNo = currFilm->GetTotalFrames(); SetFrame(0); }
 
 	MotionQuantizer& GetQuantizer (void) { return quantizer;}
 
@@ -561,7 +562,7 @@ public:
 	void			Remove (Sprite* s);
 	auto			GetDisplayList (void) -> const SpriteList&
 						{ return dpyList;}
-	auto 			GetTypeList (const std::string& typeId) -> const SpriteList&
+	auto 			GetTypeList (const std::string& typeId)
 						{ return types[typeId];}
 	static auto GetSingleton (void) -> SpriteManager&
 						{ return singleton;}
