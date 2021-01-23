@@ -82,9 +82,11 @@ void physics (void) {
 	Sprite* mario = player->GetSprite();
 	if (mario->GetGravityHandler().IsFalling()) {
 		dy = dy + g;
-		g += 0.04;
+		g += 0.08;
 	}
 	else { g = 0; dy = 0;}
+
+	if (dy > 16) {dy = 16;}
 }
 void destruct (void) {
 

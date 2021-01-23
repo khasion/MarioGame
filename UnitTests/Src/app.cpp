@@ -2,8 +2,8 @@
 using namespace app;
 
 Entity* player;
-int dx = 0, dy = 0, fw = 1;
-float g = 0.1, t = 0.1;
+int dx = 0, dy = 0;
+float g = 0.1;
 
 void must_init(bool test, const char *description)
 {
@@ -95,38 +95,40 @@ void InitPlayer () {
 			mario->GetQuantizer().Move(mario->GetBox(), dx, dy);
 			mario->Move(*dx, *dy);
 
-			TickAnimator* newanimator;
-			TickAnimation* newanimation;
+			FrameRangeAnimator* newanimator;
+			FrameRangeAnimation* newanimation;
 			AnimationFilm* film;
 			std::string prev = mario->GetAnimFilm()->GetId();
 			std::string curr;
+			bool isFalling = player->GetSprite()->GetGravityHandler().IsFalling();
 			if (*dx < 0) {
 				curr = "mario_runningl";
-				if (*dy != 0) {curr = "mario_jumpingl";}
+				if (isFalling) {curr = "mario_jumpingl";}
 			}
 			else if (*dx > 0) {
 				curr = "mario_runningr";
-				if (*dy != 0) {curr = "mario_jumpingr";}
+				if (isFalling) {curr = "mario_jumpingr";}
 			}
 			else {
-				if (player->GetSprite()->GetAnimFilm()->GetId().compare("mario_runningr") == 0
-				|| player->GetSprite()->GetAnimFilm()->GetId().compare("mario_jumpingr") == 0) {
+				if (prev.compare("mario_runningr") == 0
+				|| prev.compare("mario_jumpingr") == 0 
+				|| prev.compare("mario_standr") == 0) {
 					curr = "mario_standr";
-					if (*dy != 0) { curr = "mario_jumpingr";}
+					if (isFalling) { curr = "mario_jumpingr";}
 				}
 				else {
 					curr = "mario_standl";
-					if (*dy != 0) { curr = "mario_jumpingl";}
+					if (isFalling) { curr = "mario_jumpingl";}
 				}
 			}
-			std::cout << prev << " " << curr << std::endl;
 			if (curr.compare(prev) == 0) { return;}
-			newanimator = new TickAnimator();
+			std::cout << prev << " " << curr << std::endl;
+			newanimator = new FrameRangeAnimator();
 			film = AnimationFilmHolder::Get().GetAnimationFilm(curr);
-			newanimation = new TickAnimation(curr, 1, 0, true);
+			newanimation = new FrameRangeAnimation(curr, 0, 2, 100, 0, 0, 1);
 			mario->SetAnimFilm(film);
 			player->SetAnimator(newanimator);
-			newanimator->Start(*newanimation, std::time(nullptr));
+			newanimator->Start(newanimation, std::time(nullptr));
 		}
 	);
 }
