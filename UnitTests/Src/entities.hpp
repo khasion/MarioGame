@@ -4,20 +4,16 @@
 
 class Entity {
 public:
-	using OnJump = std::function<void(int, int)>;
 	using OnMove = std::function<void(int*, int*)>;
 	using OnDeath = std::function<void(int, int)>;
 private:
 	Sprite*		sprite = nullptr;
 	Animator*	animator = nullptr;
-	OnJump 		onJump;
 	OnMove 		onMove;
 	OnDeath		onDeath;
 	int			dx = 0, dy = 0;
 	int 			lives = 1;
 public:
-	template <typename T>
-	void SetOnJump (const T& f)	{ onJump = f;}
 	template <typename T>
 	void SetOnMove (const T& f)	{ onMove = f;}
 	template <typename T>

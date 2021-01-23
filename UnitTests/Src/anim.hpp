@@ -432,7 +432,7 @@ public:
 	using OnStartFalling		= std::function<void(void)>;
 	using OnStopFalling		= std::function<void(void)>;
 protected:
-	bool						gravityAddicted 	= true;
+	bool						gravityAddicted	= true;
 	bool						isFalling			= false;
 	OnSolidGroundPred		onSolidGround;
 	OnStartFalling			onStartFalling;

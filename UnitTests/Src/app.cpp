@@ -88,6 +88,8 @@ void InitPlayer () {
 	[]() {
 		std::cout << "stop falling." << std::endl;
 	});
+
+
 	player = new Entity(mario, 1);
 	player->SetOnMove (
 		[](int* dx, int* dy) {
@@ -122,7 +124,6 @@ void InitPlayer () {
 				}
 			}
 			if (curr.compare(prev) == 0) { return;}
-			std::cout << prev << " " << curr << std::endl;
 			newanimator = new FrameRangeAnimator();
 			film = AnimationFilmHolder::Get().GetAnimationFilm(curr);
 			newanimation = new FrameRangeAnimation(curr, 0, 2, 100, 0, 0, 1);
