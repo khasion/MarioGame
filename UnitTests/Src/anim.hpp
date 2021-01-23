@@ -362,7 +362,7 @@ public:
 	Animation*	Clone (void) const override	{ return new TickAnimation(id, delay, reps, isDiscrete); }
 
 	TickAnimation (const std::string& _id, unsigned d, unsigned r, bool discrete) :
-		Animation(_id), delay(d), reps(r), isDiscrete(discrete) { assert(Inv()); }
+		Animation(_id), delay(d), reps(r), isDiscrete(discrete) { assert(Inv());}
 };
 
 class TickAnimator : public Animator {

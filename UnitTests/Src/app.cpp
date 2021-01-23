@@ -2,6 +2,8 @@
 using namespace app;
 
 Entity* player;
+int dx = 0, dy = 0, fw = 1;
+float g = 0.1, t = 0.1;
 
 void must_init(bool test, const char *description)
 {
@@ -92,54 +94,39 @@ void InitPlayer () {
 			Sprite* mario = player->GetSprite();
 			mario->GetQuantizer().Move(mario->GetBox(), dx, dy);
 			mario->Move(*dx, *dy);
-			FrameRangeAnimator* newanimator = new FrameRangeAnimator();
-			FrameRangeAnimation* newanimation;
+
+			TickAnimator* newanimator;
+			TickAnimation* newanimation;
+			AnimationFilm* film;
+			std::string prev = mario->GetAnimFilm()->GetId();
+			std::string curr;
 			if (*dx < 0) {
-				if (*dy != 0) {
-					mario->SetAnimFilm(
-						AnimationFilmHolder::Get().GetAnimationFilm("mario_jumpingl")
-					);
-					newanimation = new FrameRangeAnimation("mario_jumpingl", 0, 0, 1, 0, 0, 1);
-				}
-				else {
-					mario->SetAnimFilm(
-						AnimationFilmHolder::Get().GetAnimationFilm("mario_runningl")
-					);
-					newanimation = new FrameRangeAnimation("mario_runningl", 0, 2, 2, *dx, *dy, 1);
-				}
+				curr = "mario_runningl";
+				if (*dy != 0) {curr = "mario_jumpingl";}
 			}
 			else if (*dx > 0) {
-				if (*dy != 0) {
-					mario->SetAnimFilm(
-						AnimationFilmHolder::Get().GetAnimationFilm("mario_jumpingr")
-					);
-					newanimation = new FrameRangeAnimation("mario_jumpingr", 0, 0, 1, 0, 0, 1);
-				}
-				else {
-					mario->SetAnimFilm(
-						AnimationFilmHolder::Get().GetAnimationFilm("mario_runningr")
-					);
-					newanimation = new FrameRangeAnimation("mario_runningr", 0, 2, 2, *dx, *dy, 1);
-				}
+				curr = "mario_runningr";
+				if (*dy != 0) {curr = "mario_jumpingr";}
 			}
 			else {
 				if (player->GetSprite()->GetAnimFilm()->GetId().compare("mario_runningr") == 0
 				|| player->GetSprite()->GetAnimFilm()->GetId().compare("mario_jumpingr") == 0) {
-
-					mario->SetAnimFilm(
-						AnimationFilmHolder::Get().GetAnimationFilm("mario_standr")
-					);
-					newanimation = new FrameRangeAnimation("mario_standr", 0, 0, 1, 0, 0, 0);
+					curr = "mario_standr";
+					if (*dy != 0) { curr = "mario_jumpingr";}
 				}
 				else {
-					mario->SetAnimFilm(
-						AnimationFilmHolder::Get().GetAnimationFilm("mario_standl")
-					);
-					newanimation = new FrameRangeAnimation("mario_standl", 0, 0, 1, 0, 0, 0);
+					curr = "mario_standl";
+					if (*dy != 0) { curr = "mario_jumpingl";}
 				}
 			}
+			std::cout << prev << " " << curr << std::endl;
+			if (curr.compare(prev) == 0) { return;}
+			newanimator = new TickAnimator();
+			film = AnimationFilmHolder::Get().GetAnimationFilm(curr);
+			newanimation = new TickAnimation(curr, 1, 0, true);
+			mario->SetAnimFilm(film);
 			player->SetAnimator(newanimator);
-			newanimator->Start(newanimation, std::time(nullptr));
+			newanimator->Start(*newanimation, std::time(nullptr));
 		}
 	);
 }

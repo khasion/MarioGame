@@ -5,6 +5,8 @@
 
 extern Entity* player;
 extern Entity* goomba;
+extern int dx, dy, fw;
+extern float g, t;
 
 namespace app {
 	class App {

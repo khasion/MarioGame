@@ -1,7 +1,5 @@
 #include "app.hpp"
 
-int dx = 0, dy = 0, fw = 1;
-float g = 0.1, t = 0.1;
 
 void render (void);
 void anim (void);
@@ -73,6 +71,7 @@ void input (void) {
 			al.done = true;
 			break;
 	}
+	if (!al.key[ALLEGRO_KEY_RIGHT] && !al.key[ALLEGRO_KEY_LEFT]) { dx = 0;}
 }
 void ai (void) {
 
@@ -86,8 +85,6 @@ void physics (void) {
 		g += 0.04;
 	}
 	else { g = 0; dy = 0;}
-	if (dx > 0)	 { dx -= t;}
-	if ( dx < 0) { dx += t;}
 }
 void destruct (void) {
 
