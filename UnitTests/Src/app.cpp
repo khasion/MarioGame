@@ -102,16 +102,18 @@ void InitPlayer () {
 			AnimationFilm* film;
 			std::string prev = mario->GetAnimFilm()->GetId();
 			std::string curr;
+			int start = 0, end = 0;
 			bool isFalling = player->GetSprite()->GetGravityHandler().IsFalling();
 			if (*dx < 0) {
-				curr = "mario_runningl";
-				if (isFalling) {curr = "mario_jumpingl";}
+				curr = "mario_runningl"; end = 1;
+				if (isFalling) {curr = "mario_jumpingl"; end = 0;}
 			}
 			else if (*dx > 0) {
-				curr = "mario_runningr";
-				if (isFalling) {curr = "mario_jumpingr";}
+				curr = "mario_runningr"; end = 1;
+				if (isFalling) {curr = "mario_jumpingr"; end = 0;}
 			}
 			else {
+				end = 0;
 				if (prev.compare("mario_runningr") == 0
 				|| prev.compare("mario_jumpingr") == 0 
 				|| prev.compare("mario_standr") == 0) {
@@ -125,8 +127,13 @@ void InitPlayer () {
 			}
 			if (curr.compare(prev) == 0) { return;}
 			newanimator = new FrameRangeAnimator();
+			newanimator->SetOnAction(
+				[mario](Animator* animator, const Animation& anim) {
+					FrameRange_Action(mario, animator, (const FrameRangeAnimation&) anim);
+				}
+			);
 			film = AnimationFilmHolder::Get().GetAnimationFilm(curr);
-			newanimation = new FrameRangeAnimation(curr, 0, 2, 100, 0, 0, 1);
+			newanimation = new FrameRangeAnimation(curr, start, end, 100, 0, 0, 1);
 			mario->SetAnimFilm(film);
 			player->SetAnimator(newanimator);
 			newanimator->Start(newanimation, std::time(nullptr));
