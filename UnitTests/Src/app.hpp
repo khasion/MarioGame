@@ -32,5 +32,6 @@ namespace app {
 }
 void InitGoomba (); 
 void InitPlayer ();
+void InitCollisions ();
 void InitEnemies ();
 #endif

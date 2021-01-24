@@ -4,6 +4,7 @@ AnimationFilmHolder 	AnimationFilmHolder::holder;
 AnimatorManager 		AnimatorManager::singleton;
 SystemClock				SystemClock::singleton;
 SpriteManager			SpriteManager::singleton;
+CollisionChecker		CollisionChecker::singleton;
 
 AnimationFilm::AnimationFilm (Bitmap _bitmap, const std::vector<Rect>& _boxes, const std::string& _id) {
 	SetBitmap(_bitmap);
@@ -259,6 +260,15 @@ void Sprite::Display (Bitmap dest, const Rect& dpyArea, const Clipper& clipper) 
 	}
 }
 
+bool Sprite::CollisionCheck (const Sprite* s) const {
+	Rect r1 = GetBox(), r2 = s->GetBox();
+	if ( r1.x < r2.x + r2.w &&
+			r1.x + r1.w > r2.x &&
+			r1.y < r2.y + r2.h &&
+			r1.y + r1.h > r2.y) { return true;}
+	return false;
+}
+
 void GravityHandler::Check (const Rect& r) {
 	if (gravityAddicted) {
 		if (onSolidGround(r)) {
@@ -297,10 +307,24 @@ void SpriteManager::Add (Sprite* s) {
 	}
 }
 
+void SpriteManager::Remove (Sprite* s) {
+	std::string typid = s->GetTypeId();
+	types[typid].remove(s);
+	dpyList.remove(s);
+}
+
 void DisplaySprites (Bitmap dest, const Rect& dpyArea, TileLayer* tlayer) {
 	auto dpyList = SpriteManager::GetSingleton().GetDisplayList();
 	for (auto it = dpyList.begin(); it != dpyList.end(); ++it) {
 		const Clipper& clipper = MakeTileLayerClipper(tlayer);
 		(*it)->Display(dest, dpyArea, clipper);
+	}
+}
+
+void CollisionChecker::Check (void) const {
+	for (auto& e : entries) {
+		if (std::get<0>(e)->CollisionCheck(std::get<1>(e))) {
+			std::get<2>(e)( std::get<0>(e), std::get<1>(e));
+		}
 	}
 }

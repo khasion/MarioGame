@@ -294,6 +294,11 @@ public:
 	{ assert(!a->HasFinished()); suspended.erase(a); running.insert(a);}
 	void MarkAsSuspended (Animator* a)
 	{ assert(a->HasFinished()); running.erase(a); suspended.insert(a);}
+	void TimeShift (unsigned dt) {
+		for (auto* a : running) {
+			a->TimeShift(dt);
+		}
+	}
 	void Progress (timestamp_t currTime) {
 		auto copied (running);
 		for (auto* a : copied) {

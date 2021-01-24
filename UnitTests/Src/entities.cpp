@@ -6,8 +6,8 @@ void Entity::Move () {
 	if (onMove) onMove();
 }
 
-void Entity::Kill (int dx, int dy) {
-	if (onDeath) onDeath(dx, dy);
+void Entity::Die () {
+	if (onDeath) onDeath();
 }
 
 void Entity::SetAnimator (Animator* anim) {

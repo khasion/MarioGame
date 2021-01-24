@@ -21,8 +21,10 @@ class Game {
 		using Action 	= std::function<void(void)>;
 		using Pred		= std::function<bool(void)>;
 	private:
-		Action render, anim, input, ai, physics, destruct, collisions, user;
+		Action render, anim, input, ai, physics, destruct, collisions, user, pauseResume;
 		Pred 	done;
+		bool 	isPaused = false;
+		uint64_t pauseTime = 0;
 		void 	Invoke (const Action& f) { if (f) f();}
 	public:
 		// Setters
@@ -44,6 +46,7 @@ class Game {
 		void setUser (const Tfunc& f) { user = f;}
 		template <typename Tfunc>
 		void setDone (const Tfunc& f) { done = f;}
+		void SetOnPauseResume (const Action& f) { pauseResume = f;}
 		//
 		void Render (void) { Invoke(render);}
 		void ProgressAnimations (void) { Invoke(anim);}
@@ -56,6 +59,14 @@ class Game {
 		bool IsFinished (void) { return done();}
 		void MainLoop (void);
 		void MainLoopIteration (void);
+
+		void Pause (uint64_t t) { isPaused = true; Invoke(pauseResume); pauseTime = t;}
+		void Resume (void) { isPaused = false; Invoke(pauseResume); pauseTime = 0;}
+		bool IsPaused (void) const { return isPaused;}
+		uint64_t GetPauseTime (void) const { return pauseTime;}
+		uint64_t GetGameTime (void) const { return std::time(nullptr);}
 };
+
+void InstallPauseResumeHandler (Game& game);
 
 #endif

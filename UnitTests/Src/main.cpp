@@ -1,5 +1,6 @@
 #include "app.hpp"
 
+Game* gam;
 
 void render (void);
 void anim (void);
@@ -17,6 +18,7 @@ int main()
 {
 	app::App app;
 	Game& game = app.GetGame();
+	gam = &game;
 	game.setRender(render);
 	game.setAnim(anim);
 	game.setInput(input);
@@ -56,6 +58,10 @@ void input (void) {
 			if (al.key[ALLEGRO_KEY_RIGHT]) {
 				player->SetDx(1*player->GetSpeed());
 			}
+			if (al.key[ALLEGRO_KEY_ESCAPE]) {
+				if (!gam->IsPaused()) {gam->Pause(std::time(nullptr));}
+				else { gam->Resume();}
+			}
 			for (int i = 0; i < ALLEGRO_KEY_MAX; i++) {
 				al.key[i] &= KEY_SEEN;
 			}
@@ -92,7 +98,7 @@ void destruct (void) {
 
 }
 void collisions (void) {
-
+	CollisionChecker::GetSingleton().Check();
 }
 void user (void) {
 }

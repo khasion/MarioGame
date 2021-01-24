@@ -11,10 +11,22 @@ void Game::MainLoop () {
 void Game::MainLoopIteration(void) {
 	Render();
 	Input();
-	ProgressAnimations();
-	AI();
-	Physics();
-	CollisionChecking();
-	CommitDestructions();
-	UserCode();
+	if (!IsPaused()) {
+		ProgressAnimations();
+		AI();
+		Physics();
+		CollisionChecking();
+		CommitDestructions();
+		UserCode();
+	}
+}
+
+void InstallPauseResumeHandler (Game& game) {
+	game.SetOnPauseResume(
+		[&game](void) {
+			if (!game.IsPaused()) {
+				AnimatorManager::GetSingleton().TimeShift(game.GetGameTime() - game.GetPauseTime());
+			}
+		}
+	);
 }

@@ -50,6 +50,7 @@ void App::Load (void) {
 
 	InitPlayer ();
 	InitGoomba ();
+	InitCollisions ();
 }
 
 void App::Clear (void) {
@@ -115,6 +116,11 @@ void InitGoomba () {
 			goomba->SetAnimFilm(film);
 			enemy_1->SetAnimator(newanimator);
 			newanimator->Start(newanimation, std::time(nullptr));
+		}
+	);
+	enemy_1->SetOnDeath (
+		[]() {
+			SpriteManager::GetSingleton().Remove(enemy_1->GetSprite());
 		}
 	);
 	enemy_1->SetDx(-1);
@@ -197,5 +203,23 @@ void InitPlayer () {
 			newanimator->Start(newanimation, std::time(nullptr));
 		}
 	);
+	player->SetOnDeath (
+		[]() {
+			SpriteManager::GetSingleton().Remove(player->GetSprite());
+		}
+	);
 	EntityManager::Get().Add(player);
+}
+
+void InitCollisions (void) {
+	CollisionChecker::GetSingleton().Register(
+		player->GetSprite(),
+		enemy_1->GetSprite(),
+		[](Sprite* s1, Sprite* s2) {
+			CollisionChecker::GetSingleton().Cancel(s1, s2);
+			if (s1->GetGravityHandler().IsFalling()) {
+				enemy_1->Die();
+			}
+			else { player->Die();}
+		});
 }

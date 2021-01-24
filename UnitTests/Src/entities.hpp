@@ -5,7 +5,7 @@
 class Entity {
 public:
 	using OnMove = std::function<void(void)>;
-	using OnDeath = std::function<void(int, int)>;
+	using OnDeath = std::function<void()>;
 private:
 	Sprite*		sprite = nullptr;
 	Animator*	animator = nullptr;
@@ -20,8 +20,7 @@ public:
 	void SetOnDeath (const T& f)	{ onDeath = f;}
 
 	void 	Move ();
-	void 	Jump (int dx, int dy);
-	void 	Kill (int dx, int dy);
+	void 	Die ();
 
 	Sprite*	GetSprite (void)			{ return sprite;}
 	void		SetSprite (Sprite* s)	{ sprite = s;}
