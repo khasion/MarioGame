@@ -26,4 +26,5 @@ clean:
 	rm layer.o;
 	rm game.o;
 	rm anim.o;
+	rm entities.o;
 	rm vgcore.*;

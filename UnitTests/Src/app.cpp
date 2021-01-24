@@ -99,7 +99,7 @@ void InitGoomba () {
 			FrameRangeAnimator* newanimator;
 			FrameRangeAnimation* newanimation;
 			AnimationFilm* film;
-			int start = 0, end = 0;
+			int start = 0, end = 1;
 			std::string curr;
 			curr = "goomba";
 			newanimator = new FrameRangeAnimator();

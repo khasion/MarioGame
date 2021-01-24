@@ -43,7 +43,6 @@ void anim (void) {
 
 void input (void) {
 	Sprite* mario = player->GetSprite();
-	Sprite* goomba= enemy_1->GetSprite();
 	switch (al.event.type) {
 		case ALLEGRO_EVENT_TIMER:
 			if (al.key[ALLEGRO_KEY_UP]) {
