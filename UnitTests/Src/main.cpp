@@ -46,22 +46,16 @@ void input (void) {
 	Sprite* goomba= enemy_1->GetSprite();
 	switch (al.event.type) {
 		case ALLEGRO_EVENT_TIMER:
-			if(enemy_1->GetDx()<100){
-				enemy_1->SetDx(enemy_1->GetDx()+1);}
-			else if(enemy_1->GetDx()>500){
-				enemy_1->SetDx(enemy_1->GetDx()-1);}
-
 			if (al.key[ALLEGRO_KEY_UP]) {
 				if (!mario->GetGravityHandler().IsFalling()) {
-					dy = -11;
+					player->SetDy(-11);
 				}
 			}
 			if (al.key[ALLEGRO_KEY_LEFT]) {
-				
-				dx = -1;
+				player->SetDx(-1*player->GetSpeed());
 			}
 			if (al.key[ALLEGRO_KEY_RIGHT]) {
-				dx = 1;
+				player->SetDx(1*player->GetSpeed());
 			}
 			for (int i = 0; i < ALLEGRO_KEY_MAX; i++) {
 				al.key[i] &= KEY_SEEN;
@@ -78,26 +72,22 @@ void input (void) {
 			al.done = true;
 			break;
 	}
-	if (!al.key[ALLEGRO_KEY_RIGHT] && !al.key[ALLEGRO_KEY_LEFT]) { dx = 0;}
+	if (!al.key[ALLEGRO_KEY_RIGHT] && !al.key[ALLEGRO_KEY_LEFT]) { player->SetDx(0);}
 }
 void ai (void) {
-
+	enemy_1->Move();
 }
 void physics (void) {
-	int x=enemy_1->GetDx();
-	int y=enemy_1->GetDy();
-	//enemy_1->Move(&x,&y);
-	Sprite* goomba = enemy_1->GetSprite();
-	player->Move(&dx, &dy);
-	tlayer->Scroll(dx, dy);
-	Sprite* mario = player->GetSprite();
-	if (mario->GetGravityHandler().IsFalling()) {
-		dy = dy + g;
-		g += 0.08;
+	player->Move();
+	tlayer->Scroll(*player->GetDx(), *player->GetDy());
+	auto list = EntityManager::Get().GetAll();
+	for (auto it = list.begin(); it != list.end(); ++it) {
+		Sprite* s = (*it)->GetSprite();
+		if (s->GetGravityHandler().IsFalling()) {
+			(*it)->SetDy(*((*it)->GetDy())+(*it)->GetMass());
+			(*it)->SetMass((*it)->GetMass()+(*it)->GetG());
+		}
 	}
-	else { g = 0; dy = 0;}
-
-	if (dy > 16) {dy = 16;}
 }
 void destruct (void) {
 

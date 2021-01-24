@@ -2,8 +2,7 @@
 using namespace app;
 
 Entity* player,*enemy_1;
-int dx = 0, dy = 0;
-float g = 0.1;
+double g = 0;
 
 void must_init(bool test, const char *description)
 {
@@ -81,10 +80,21 @@ void InitGoomba () {
 		goomba->GetQuantizer().Move(r, &dx, &dy);
 		return (!dy) ? true : false;
 	});
-	enemy_1 = new Entity(goomba, 1);
-	enemy_1->SetOnMove ([](int* dx, int* dy) {
+	goomba->GetGravityHandler().SetOnStartFalling(
+	[]() {
+		std::cout << "start falling." << std::endl;
+	});
+	goomba->GetGravityHandler().SetOnStopFalling(
+	[]() {
+		std::cout << "stop falling." << std::endl;
+	});
+	enemy_1 = new Entity(goomba, 1, 3, 1);
+	enemy_1->SetOnMove ([]() {
 			Sprite* goomba = enemy_1->GetSprite();
+			int *dx = enemy_1->GetDx(), *dy = enemy_1->GetDy();
+			int tempdx = *dx;
 			goomba->GetQuantizer().Move(goomba->GetBox(), dx, dy);
+			if (*dx == 0) { *dx = tempdx * (-1);}
 			goomba->Move(*dx, *dy);
 			FrameRangeAnimator* newanimator;
 			FrameRangeAnimation* newanimation;
@@ -105,6 +115,8 @@ void InitGoomba () {
 			newanimator->Start(newanimation, std::time(nullptr));
 		}
 	);
+	enemy_1->SetDx(1);
+	EntityManager::Get().Add(enemy_1);
 }
 void InitPlayer () {
 	Sprite* mario = new Sprite(
@@ -133,10 +145,11 @@ void InitPlayer () {
 	});
 
 
-	player = new Entity(mario, 1);
+	player = new Entity(mario, 2, 4, 1);
 	player->SetOnMove (
-		[](int* dx, int* dy) {
+		[]() {
 			Sprite* mario = player->GetSprite();
+			int* dx = player->GetDx(), *dy = player->GetDy();
 			mario->GetQuantizer().Move(mario->GetBox(), dx, dy);
 			mario->Move(*dx, *dy);
 
@@ -182,4 +195,5 @@ void InitPlayer () {
 			newanimator->Start(newanimation, std::time(nullptr));
 		}
 	);
+	EntityManager::Get().Add(player);
 }

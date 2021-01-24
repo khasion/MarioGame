@@ -5,8 +5,7 @@
 
 extern Entity* player;
 extern Entity* enemy_1;
-extern int dx, dy;
-extern float g;
+extern double g;
 
 namespace app {
 	class App {

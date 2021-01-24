@@ -4,9 +4,9 @@ CXXFLAGS = -std=c++14
 make:	main.o app.o view.o layer.o game.o anim.o entities.o
 	g++ main.o app.o view.o layer.o game.o anim.o entities.o -o game -std=c++14 -lallegro_font -lallegro_image -lallegro_primitives -lallegro_color -lallegro -std=c++14 -std=gnu++14
 
-main.o: main.cpp app.hpp game.hpp anim.hpp layer.hpp view.hpp
+main.o: main.cpp app.hpp game.hpp anim.hpp layer.hpp view.hpp entities.hpp
 	$(CC) -c main.cpp -std=c++14
-app.o:	app.cpp app.hpp game.hpp anim.hpp layer.hpp view.hpp
+app.o:	app.cpp app.hpp game.hpp anim.hpp layer.hpp view.hpp entities.hpp
 	$(CC) -c app.cpp -std=c++14
 view.o:	view.cpp view.hpp
 	$(CC) -c view.cpp -std=c++14

@@ -1,7 +1,9 @@
 #include "entities.hpp"
 
-void Entity::Move (int* dx, int* dy) {
-	if (onMove) onMove(dx, dy);
+EntityManager EntityManager::singleton;
+
+void Entity::Move () {
+	if (onMove) onMove();
 }
 
 void Entity::Kill (int dx, int dy) {
