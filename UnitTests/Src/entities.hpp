@@ -56,7 +56,7 @@ private:
 public:
 	static EntityManager& Get(void) 	{ return singleton;}
 
-	void 					Add (Entity* e) 	{ entitySet.insert(e); std::cout << entitySet.size() << std::endl;}
+	void 					Add (Entity* e) 	{ entitySet.insert(e);}
 	void					Remove (Entity* e){ entitySet.erase(e);}
 	std::set<Entity*>	GetAll (void)		{ return entitySet;}
 };

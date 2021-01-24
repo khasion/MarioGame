@@ -100,8 +100,10 @@ void InitGoomba () {
 			FrameRangeAnimation* newanimation;
 			AnimationFilm* film;
 			int start = 0, end = 1;
+			std::string prev = goomba->GetAnimFilm()->GetId();
 			std::string curr;
 			curr = "goomba";
+			if (prev.compare(curr) == 0) { return;}
 			newanimator = new FrameRangeAnimator();
 			newanimator->SetOnAction(
 				[goomba](Animator* animator, const Animation& anim) {
@@ -109,9 +111,9 @@ void InitGoomba () {
 				}
 			);
 			film = AnimationFilmHolder::Get().GetAnimationFilm(curr);
-			newanimation = new FrameRangeAnimation(curr, start, end, 100, 0, 0, 1);
+			newanimation = new FrameRangeAnimation(curr, start, end, INT_MAX, 0, 0, 1);
 			goomba->SetAnimFilm(film);
-			player->SetAnimator(newanimator);
+			enemy_1->SetAnimator(newanimator);
 			newanimator->Start(newanimation, std::time(nullptr));
 		}
 	);
@@ -185,11 +187,12 @@ void InitPlayer () {
 			newanimator = new FrameRangeAnimator();
 			newanimator->SetOnAction(
 				[mario](Animator* animator, const Animation& anim) {
+					std::cout << "ASDA" << std::endl;
 					FrameRange_Action(mario, animator, (const FrameRangeAnimation&) anim);
 				}
 			);
 			film = AnimationFilmHolder::Get().GetAnimationFilm(curr);
-			newanimation = new FrameRangeAnimation(curr, start, end, 100, 0, 0, 1);
+			newanimation = new FrameRangeAnimation(curr, start, end, INT_MAX, 0, 0, 1);
 			mario->SetAnimFilm(film);
 			player->SetAnimator(newanimator);
 			newanimator->Start(newanimation, std::time(nullptr));
