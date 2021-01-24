@@ -43,14 +43,21 @@ void anim (void) {
 
 void input (void) {
 	Sprite* mario = player->GetSprite();
+	Sprite* goomba= enemy_1->GetSprite();
 	switch (al.event.type) {
 		case ALLEGRO_EVENT_TIMER:
+			if(enemy_1->GetDx()<100){
+				enemy_1->SetDx(enemy_1->GetDx()+1);}
+			else if(enemy_1->GetDx()>500){
+				enemy_1->SetDx(enemy_1->GetDx()-1);}
+
 			if (al.key[ALLEGRO_KEY_UP]) {
 				if (!mario->GetGravityHandler().IsFalling()) {
 					dy = -11;
 				}
 			}
 			if (al.key[ALLEGRO_KEY_LEFT]) {
+				
 				dx = -1;
 			}
 			if (al.key[ALLEGRO_KEY_RIGHT]) {
@@ -77,6 +84,10 @@ void ai (void) {
 
 }
 void physics (void) {
+	int x=enemy_1->GetDx();
+	int y=enemy_1->GetDy();
+	//enemy_1->Move(&x,&y);
+	Sprite* goomba = enemy_1->GetSprite();
 	player->Move(&dx, &dy);
 	tlayer->Scroll(dx, dy);
 	Sprite* mario = player->GetSprite();

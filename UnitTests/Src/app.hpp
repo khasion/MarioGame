@@ -4,7 +4,7 @@
 #include "entities.hpp"
 
 extern Entity* player;
-extern Entity* goomba;
+extern Entity* enemy_1;
 extern int dx, dy;
 extern float g;
 
@@ -31,7 +31,7 @@ namespace app {
 		}
 	};
 }
-
+void InitGoomba (); 
 void InitPlayer ();
 void InitEnemies ();
 #endif

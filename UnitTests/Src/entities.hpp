@@ -34,7 +34,9 @@ public:
 
 	int	GetDx (void)	{ return dx;}
 	int	GetDy (void)	{ return dy;}
-
+	void 	SetDx (int x) {dx=x;}
+	void 	SetDy (int y) {dy=y;}
+	
 	Entity (Sprite* _s, int _lives) : 
 		sprite(_s), lives(_lives) {}
 };

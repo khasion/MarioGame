@@ -1,7 +1,7 @@
 #include "app.hpp"
 using namespace app;
 
-Entity* player,*enemy_1;
+Entity* player;
 int dx = 0, dy = 0;
 float g = 0.1;
 
@@ -50,7 +50,6 @@ void App::Load (void) {
 	AnimationFilmHolder::Get().LoadAll(ANIM_PATH);
 
 	InitPlayer ();
-	InitGoomba ();
 }
 
 void App::Clear (void) {
@@ -64,48 +63,7 @@ void App::Clear (void) {
 	al_destroy_event_queue(al.queue);
 }
 
-void InitGoomba () {
-	Sprite* goomba = new Sprite(
-		500,
-		480-50,
-		AnimationFilmHolder::Get().GetAnimationFilm("goomba"),
-		"GOOMBA"
-	);
-	SpriteManager::GetSingleton().Add(goomba);
 
-	goomba->PrepareSpriteGravityHandler(tlayer->GetGridLayer(), goomba);
-	goomba->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), goomba));
-	goomba->GetGravityHandler().SetOnSolidGround(
-	[goomba](const Rect& r) {
-		int dx = 0, dy = 1;
-		goomba->GetQuantizer().Move(r, &dx, &dy);
-		return (!dy) ? true : false;
-	});
-	enemy_1 = new Entity(goomba, 1);
-	enemy_1->SetOnMove ([](int* dx, int* dy) {
-			Sprite* goomba = enemy_1->GetSprite();
-			goomba->GetQuantizer().Move(goomba->GetBox(), dx, dy);
-			goomba->Move(*dx, *dy);
-			FrameRangeAnimator* newanimator;
-			FrameRangeAnimation* newanimation;
-			AnimationFilm* film;
-			int start = 0, end = 0;
-			std::string curr;
-			curr = "goomba";
-			newanimator = new FrameRangeAnimator();
-			newanimator->SetOnAction(
-				[goomba](Animator* animator, const Animation& anim) {
-					FrameRange_Action(goomba, animator, (const FrameRangeAnimation&) anim);
-				}
-			);
-			film = AnimationFilmHolder::Get().GetAnimationFilm(curr);
-			newanimation = new FrameRangeAnimation(curr, start, end, 100, 0, 0, 1);
-			goomba->SetAnimFilm(film);
-			player->SetAnimator(newanimator);
-			newanimator->Start(newanimation, std::time(nullptr));
-		}
-	);
-}
 void InitPlayer () {
 	Sprite* mario = new Sprite(
 		320,
