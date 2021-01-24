@@ -103,7 +103,7 @@ void InitGoomba () {
 			std::string prev = goomba->GetAnimFilm()->GetId();
 			std::string curr;
 			curr = "goomba";
-			if (prev.compare(curr) == 0) { return;}
+			if (enemy_1->GetAnimator() && prev.compare(curr) == 0) { return;}
 			newanimator = new FrameRangeAnimator();
 			newanimator->SetOnAction(
 				[goomba](Animator* animator, const Animation& anim) {
@@ -117,7 +117,7 @@ void InitGoomba () {
 			newanimator->Start(newanimation, std::time(nullptr));
 		}
 	);
-	enemy_1->SetDx(1);
+	enemy_1->SetDx(-1);
 	EntityManager::Get().Add(enemy_1);
 }
 void InitPlayer () {
@@ -187,7 +187,6 @@ void InitPlayer () {
 			newanimator = new FrameRangeAnimator();
 			newanimator->SetOnAction(
 				[mario](Animator* animator, const Animation& anim) {
-					std::cout << "ASDA" << std::endl;
 					FrameRange_Action(mario, animator, (const FrameRangeAnimation&) anim);
 				}
 			);

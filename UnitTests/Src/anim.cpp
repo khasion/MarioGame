@@ -250,11 +250,6 @@ void Sprite::Display (Bitmap dest, const Rect& dpyArea, const Clipper& clipper) 
 			clippedBox.w,
 			clippedBox.h
 		};
-		currFilm->DisplayFrame(
-			dest,
-			{dpyPos.x, 50},
-			frameNo
-		);
 		MaskedBlit(
 			currFilm->GetBitmap(),
 			clippedFrame,
