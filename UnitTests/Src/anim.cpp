@@ -316,6 +316,7 @@ void SpriteManager::Remove (Sprite* s) {
 void DisplaySprites (Bitmap dest, const Rect& dpyArea, TileLayer* tlayer) {
 	auto dpyList = SpriteManager::GetSingleton().GetDisplayList();
 	for (auto it = dpyList.begin(); it != dpyList.end(); ++it) {
+		if (!(*it)->IsVisible()) { continue;}
 		const Clipper& clipper = MakeTileLayerClipper(tlayer);
 		(*it)->Display(dest, dpyArea, clipper);
 	}

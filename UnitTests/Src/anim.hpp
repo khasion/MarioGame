@@ -461,7 +461,7 @@ protected:
 	byte					frameNo = 0;
 	Rect					frameBox;
 	int 					x = 0, y = 0;
-	bool					isVisible = false;
+	bool					isVisible = true;
 	AnimationFilm*		currFilm = nullptr;
 	Clipper*				boundingArea = nullptr;
 	unsigned				zorder = 0;

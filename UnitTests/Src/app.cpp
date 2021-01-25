@@ -138,10 +138,11 @@ void InitPiranha () {
 	);
 	Sprite* piranha_collision = new Sprite (
 		57*16,
-		480-130,
+		480-132,
 		AnimationFilmHolder::Get().GetAnimationFilm("piran"),
 		"PIRANHA_COLL"
 	);
+	piranha_collision->SetVisibility(false);
 	SpriteManager::GetSingleton().Add(piranha_sprite);
 	SpriteManager::GetSingleton().Add(piranha_collision);
 	piranha_sprite->SetHasDirectMotion(true);
