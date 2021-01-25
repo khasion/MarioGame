@@ -11,7 +11,9 @@ private:
 	Animator*	animator = nullptr;
 	OnMove 		onMove;
 	OnDeath		onDeath;
-	int			dx = 0, dy = 0, u = 0, m = 0, g = 1;
+	double		mi = 0, m = 0;
+	double		g = 0.4;
+	int			dx = 0, dy = 0, u = 0;
 	int 			lives = 1;
 public:
 	template <typename T>
@@ -31,19 +33,20 @@ public:
 	void 			SetAnimator (Animator* anim);
 	Animator*	GetAnimator (void) { return animator;}
 
-	int*	GetDx (void)		{ return &dx;}
-	int*	GetDy (void)		{ return &dy;}
-	int	GetMass (void)		{ return m;}
-	int	GetSpeed(void)		{ return u;}
-	int	GetG(void)			{ return g;}
-	void 	SetDx (int _dx) 	{ dx = _dx%17;}
-	void 	SetDy (int _dy) 	{ dy = _dy%17;}
-	void	SetMass	(int _m)	{ m = _m;}
-	void 	SetSpeed (int _u)	{ u = _u;}
-	void	SetG(int _g)		{ g = _g;}
+	int*		GetDx (void)		{ return &dx;}
+	int*		GetDy (void)		{ return &dy;}
+	double	GetMass (void)		{ return m;}
+	int		GetSpeed(void)		{ return u;}
+	double	GetG(void)			{ return g;}
+	void	 	SetDx (int _dx) 	{ dx = _dx;}
+	void	 	SetDy (int _dy) 	{ dy = _dy;}
+	void		SetMass(double _m){ m = _m;}
+	void 		SetSpeed (int _u)	{ u = _u;}
+	void		SetG(int _g)		{ g = _g;}
+	void		ResetMass (void)	{ m = mi;}
 	
-	Entity (Sprite* _s, int _u, int _m, int _lives) : 
-		sprite(_s), u(_u), m(_m), lives(_lives) {}
+	Entity (Sprite* _s, int _u, double _m, int _lives) : 
+		sprite(_s), u(_u), m(_m), mi(_m), lives(_lives) {}
 };
 
 class EntityManager {

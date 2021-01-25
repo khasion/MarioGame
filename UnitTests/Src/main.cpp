@@ -1,6 +1,6 @@
 #include "app.hpp"
 
-Game* gam;
+Game* gaem;
 
 void render (void);
 void anim (void);
@@ -18,7 +18,7 @@ int main()
 {
 	app::App app;
 	Game& game = app.GetGame();
-	gam = &game;
+	gaem = &game;
 	game.setRender(render);
 	game.setAnim(anim);
 	game.setInput(input);
@@ -35,6 +35,11 @@ int main()
 void render (void) {
 	if (al_is_event_queue_empty(al.queue)) {
 		tlayer->Display(al_get_target_bitmap(), Rect {0, 0, 0, 0});
+		if (gaem->IsPaused()) { 
+			al_draw_text(al.font, 
+			al_map_rgb(0, 0, 0), 220, 120, 0,
+			"Press ENTER to continue.");
+		}
 		al_flip_display();
 	}
 }
@@ -47,20 +52,23 @@ void input (void) {
 	Sprite* mario = player->GetSprite();
 	switch (al.event.type) {
 		case ALLEGRO_EVENT_TIMER:
-			if (al.key[ALLEGRO_KEY_UP]) {
-				if (!mario->GetGravityHandler().IsFalling()) {
-					player->SetDy(-11);
-				}
+			if (al.key[ALLEGRO_KEY_Z]) {
+				player->SetDy(-12);
 			}
 			if (al.key[ALLEGRO_KEY_LEFT]) {
-				player->SetDx(-1*player->GetSpeed());
+				player->SetDx(-1);
 			}
 			if (al.key[ALLEGRO_KEY_RIGHT]) {
-				player->SetDx(1*player->GetSpeed());
+				player->SetDx(1);
+			}
+			if (al.key[ALLEGRO_KEY_X]) {
+				player->SetDx(*player->GetDx()*player->GetSpeed());
 			}
 			if (al.key[ALLEGRO_KEY_ESCAPE]) {
-				if (!gam->IsPaused()) {gam->Pause(std::time(nullptr));}
-				else { gam->Resume();}
+				if (!gaem->IsPaused()) {gaem->Pause(std::time(nullptr));}
+			}
+			if (al.key[ALLEGRO_KEY_ENTER]) {
+				if (gaem->IsPaused()) { gaem->Resume();}
 			}
 			for (int i = 0; i < ALLEGRO_KEY_MAX; i++) {
 				al.key[i] &= KEY_SEEN;
@@ -83,16 +91,18 @@ void ai (void) {
 	enemy_1->Move();
 }
 void physics (void) {
-	player->Move();
-	tlayer->Scroll(*player->GetDx(), *player->GetDy());
 	auto list = EntityManager::Get().GetAll();
 	for (auto it = list.begin(); it != list.end(); ++it) {
 		Sprite* s = (*it)->GetSprite();
 		if (s->GetGravityHandler().IsFalling()) {
-			(*it)->SetDy(*((*it)->GetDy())+(*it)->GetMass());
+			(*it)->SetDy(*((*it)->GetDy())+(*it)->GetMass()*(*it)->GetMass());
 			(*it)->SetMass((*it)->GetMass()+(*it)->GetG());
+			if (*(*it)->GetDy() > 16) { (*it)->SetDy(16);}
 		}
+		else { (*it)->ResetMass();}
 	}
+	player->Move();
+	tlayer->Scroll(*player->GetDx(), *player->GetDy());
 }
 void destruct (void) {
 

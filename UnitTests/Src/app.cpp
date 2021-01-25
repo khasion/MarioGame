@@ -153,7 +153,7 @@ void InitPlayer () {
 	});
 
 
-	player = new Entity(mario, 2, 4, 1);
+	player = new Entity(mario, 2, 1, 1);
 	player->SetOnMove (
 		[]() {
 			Sprite* mario = player->GetSprite();
@@ -161,9 +161,6 @@ void InitPlayer () {
 			mario->GetQuantizer().Move(mario->GetBox(), dx, dy);
 			mario->Move(*dx, *dy);
 
-			FrameRangeAnimator* newanimator;
-			FrameRangeAnimation* newanimation;
-			AnimationFilm* film;
 			std::string prev = mario->GetAnimFilm()->GetId();
 			std::string curr;
 			int start = 0, end = 0;
@@ -190,14 +187,14 @@ void InitPlayer () {
 				}
 			}
 			if (curr.compare(prev) == 0) { return;}
-			newanimator = new FrameRangeAnimator();
+			FrameRangeAnimator* newanimator = new FrameRangeAnimator();
 			newanimator->SetOnAction(
 				[mario](Animator* animator, const Animation& anim) {
 					FrameRange_Action(mario, animator, (const FrameRangeAnimation&) anim);
 				}
 			);
-			film = AnimationFilmHolder::Get().GetAnimationFilm(curr);
-			newanimation = new FrameRangeAnimation(curr, start, end, INT_MAX, 0, 0, 1);
+			AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm(curr);
+			FrameRangeAnimation* newanimation = new FrameRangeAnimation(curr, start, end, INT_MAX, 0, 0, 1);
 			mario->SetAnimFilm(film);
 			player->SetAnimator(newanimator);
 			newanimator->Start(newanimation, std::time(nullptr));
