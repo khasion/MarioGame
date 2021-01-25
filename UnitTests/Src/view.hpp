@@ -180,4 +180,6 @@ bool CanPassGridTile (GridMap* m, Dim col, Dim row, GridIndex flags);
 extern bool IsTileIndexAssumedEmpty (Index index);
 void ComputeTileGridBlocks1 (const TileMap* map, GridMap* grid);
 
+extern std::vector<bool> empty_tiles;
+
 #endif

@@ -50,7 +50,7 @@ void App::Load (void) {
 
 	InitPlayer ();
 	InitGoomba ();
-	InitCollisions ();
+	//InitCollisions ();
 }
 
 void App::Clear (void) {

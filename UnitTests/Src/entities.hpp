@@ -12,7 +12,7 @@ private:
 	OnMove 		onMove;
 	OnDeath		onDeath;
 	double		mi = 0, m = 0;
-	double		g = 0.4;
+	double		g = 0.7;
 	int			dx = 0, dy = 0, u = 0;
 	int 			lives = 1;
 public:

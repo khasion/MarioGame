@@ -53,7 +53,7 @@ void input (void) {
 	switch (al.event.type) {
 		case ALLEGRO_EVENT_TIMER:
 			if (al.key[ALLEGRO_KEY_Z]) {
-				player->SetDy(-12);
+				player->SetDy(-8);
 			}
 			if (al.key[ALLEGRO_KEY_LEFT]) {
 				player->SetDx(-1);
@@ -95,7 +95,7 @@ void physics (void) {
 	for (auto it = list.begin(); it != list.end(); ++it) {
 		Sprite* s = (*it)->GetSprite();
 		if (s->GetGravityHandler().IsFalling()) {
-			(*it)->SetDy(*((*it)->GetDy())+(*it)->GetMass()*(*it)->GetMass());
+			(*it)->SetDy(*((*it)->GetDy())+(*it)->GetMass()+(*it)->GetG());
 			(*it)->SetMass((*it)->GetMass()+(*it)->GetG());
 			if (*(*it)->GetDy() > 16) { (*it)->SetDy(16);}
 		}

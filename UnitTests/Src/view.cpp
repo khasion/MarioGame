@@ -1,6 +1,7 @@
 #include "view.hpp"
 
 ALLEGRO al;
+std::vector<bool> empty_tiles;
 
 // Display routines
 bool Open (Dim rw, Dim rh, BitDepth depth) {
@@ -135,15 +136,16 @@ bool CanPassGridTile (GridMap* m, Dim col, Dim row, GridIndex flags) {
 }
 
 bool IsTileIndexAssumedEmpty (Index index) {
-	if (index < 48 || index == 61 || index == 142 || (index >= 54 && index <= 59) ||
-	index == 69 || index == 71 || (index >= 81 && index <= 83) ||
-	index == 84 || index == 85 || index == 96 || index == 97)  {
-		return true;
-	}
-	return false;
+	return empty_tiles[index];
 }
 
 void ComputeTileGridBlocks1 (const TileMap* map, GridMap* gridmap) {
+	empty_tiles = *new std::vector<bool>(624, true);
+	std::ifstream f("empty_grid_tiles.conf");
+	int n;
+	while (f >> n) {
+		empty_tiles[n] = false;
+	}
 	for (auto row = 0; row < MAX_HEIGHT; ++row) {
 		for (auto col = 0; col < MAX_WIDTH; ++col) {
 			(*gridmap)[row][col] = IsTileIndexAssumedEmpty((*map)[row][col]) ? GRID_EMPTY_TILE : GRID_SOLID_TILE;
