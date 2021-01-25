@@ -69,12 +69,12 @@ void MovingAnimator::Progress (timestamp_t currTime) {
 void Sprite_MoveAction (Sprite* sprite, const  MovingAnimation& anim) {
 	sprite->Move(anim.GetDx(), anim.GetDy());
 }
-
 /*animator->SetOnAction(
 	[sprite](Animator* animator, const Animation& anim) {
 		Sprite_MoveAction(sprite, (const MovingAnimation&) anim);
 	}
 );*/
+
 
 void FrameRangeAnimator::Progress (timestamp_t currTime) {
 	while (currTime > lastTime && (currTime - lastTime) >= anim->GetDelay()) {
@@ -167,6 +167,25 @@ void TickAnimator::Progress (timestamp_t currTime) {
 		}
 	}
 }
+
+void ScrollAnimator::Progress (timestamp_t currTime) {
+	lastTime = currTime;
+	NotifyAction(*anim);
+	if (++currRep >= anim->GetScroll().size()) {
+		state = ANIMATOR_FINISHED;
+		NotifyStopped ();
+		return;
+	}
+}
+void Sprite_ScrollAction (Sprite* sprite, const ScrollAnimator* animator, const ScrollAnimation* anim) {
+	int rep = animator->GetCurrRep();
+	sprite->Move(anim->GetDx(rep), anim->GetDy(rep));
+}
+/*animator->SetOnAction(
+	[sprite](Animator* animator, const Animation& anim) {
+		Sprite_ScrollAction(sprite, (ScrollAnimator*) animator, (const ScrollAnimation&) anim);
+	}
+);*/
 
 void MotionQuantizer::Move (const Rect& r, int *dx, int *dy) {
 	if (!used) {

@@ -32,14 +32,22 @@ int main()
 	return 0;
 }
 
+std::string message = "";
+
 void render (void) {
 	if (al_is_event_queue_empty(al.queue)) {
-		tlayer->Display(al_get_target_bitmap(), Rect {0, 0, 0, 0});
-		if (gaem->IsPaused()) { 
+		if (player->GetLives() >= 0) {
+			tlayer->Display(al_get_target_bitmap(), Rect {0, 0, 0, 0});
+		}
+		else {
+			BitmapClear(al_get_target_bitmap(), RGB {0, 255, 255});
+		}
+		if (message.size() > 0) { 
 			al_draw_text(al.font, 
 			al_map_rgb(0, 0, 0), 220, 120, 0,
-			"Press ENTER to continue.");
+			message.c_str());
 		}
+
 		al_flip_display();
 	}
 }
@@ -65,10 +73,16 @@ void input (void) {
 				player->SetDx(*player->GetDx()*player->GetSpeed());
 			}
 			if (al.key[ALLEGRO_KEY_ESCAPE]) {
-				if (!gaem->IsPaused()) {gaem->Pause(std::time(nullptr));}
+				if (!gaem->IsPaused()) {
+					gaem->Pause(std::time(nullptr));
+					message = "Press ENTER to continue.";
+				}
 			}
 			if (al.key[ALLEGRO_KEY_ENTER]) {
-				if (gaem->IsPaused()) { gaem->Resume();}
+				if (gaem->IsPaused()) {
+					gaem->Resume();
+					message = "";
+				}
 			}
 			for (int i = 0; i < ALLEGRO_KEY_MAX; i++) {
 				al.key[i] &= KEY_SEEN;
@@ -88,8 +102,8 @@ void input (void) {
 	if (!al.key[ALLEGRO_KEY_RIGHT] && !al.key[ALLEGRO_KEY_LEFT]) { player->SetDx(0);}
 }
 void ai (void) {
-	enemy_1->Move();
-	piranha->Move();
+	enemy_1->Do();
+	piranha->Do(player->GetSprite());
 }
 void physics (void) {
 	auto list = EntityManager::Get().GetAll();
@@ -102,7 +116,7 @@ void physics (void) {
 		}
 		else { (*it)->ResetMass();}
 	}
-	player->Move();
+	player->Do();
 	tlayer->Scroll(*player->GetDx(), *player->GetDy());
 }
 void destruct (void) {

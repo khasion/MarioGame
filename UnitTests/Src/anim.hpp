@@ -159,7 +159,7 @@ public:
 		return new MovingPathAnimation (id, path);
 	}
 	MovingPathAnimation (const std::string& _id, const Path& _path) :
-		path(_path), Animation(id) {}
+		path(_path), Animation(_id) {}
 };
 
 class FlashAnimation : public Animation {
@@ -179,7 +179,7 @@ public:
 		return new FlashAnimation(id, repetitions, hideDelay, showDelay); 
 	}
 	FlashAnimation (const std::string& _id, unsigned n, unsigned show, unsigned hide) :
-		Animation(id), repetitions(n), hideDelay(hide), showDelay(show) {}
+		Animation(_id), repetitions(n), hideDelay(hide), showDelay(show) {}
 };
 
 struct ScrollEntry {
@@ -199,6 +199,10 @@ public:
 	Animation*		Clone (void) const override{
 		return new ScrollAnimation(id, scroll); 
 	}
+	int GetDelay (int rep) { return scroll[rep].delay;}
+	int GetDx (int rep) const { return scroll[rep].dx;}
+	int GetDy (int rep) const { return scroll[rep].dy;}
+	unsigned	GetStartFrame (void) { return 0;}
 	ScrollAnimation(const std::string& _id, const Scroll& _scroll) :
 		Animation(_id), scroll(_scroll) {}
 };
@@ -276,6 +280,28 @@ public:
 	}
 	FrameRangeAnimation* GetAnim (void) { return anim;}
 	FrameRangeAnimator (void) = default;
+};
+
+class ScrollAnimator : public Animator {
+protected:
+	ScrollAnimation* anim = nullptr;
+	unsigned currFrame = 0;
+	unsigned currRep = 0;
+public:
+	void Progress (timestamp_t currTime);
+	unsigned GetCurrFrame (void) const { return currFrame;}
+	unsigned GetCurrRep (void) const { return currRep;}
+	void Start (ScrollAnimation* a, timestamp_t t) {
+		anim		= a;
+		lastTime = t;
+		state = ANIMATOR_RUNNING;
+		currFrame= anim->GetStartFrame(); 
+		currRep = 0;
+		NotifyStarted();
+		NotifyAction(*anim);
+	}
+	ScrollAnimation* GetAnim (void) { return anim;}
+	ScrollAnimator (void) = default;
 };
 
 class AnimatorManager {	
@@ -582,6 +608,7 @@ public:
 void FrameRange_Action (Sprite* sprite, Animator* animator, const FrameRangeAnimation& anim);
 
 const Sprite::Mover MakeSpriteGridLayerMover (GridLayer*, Sprite*);
+void Sprite_ScrollAction(Sprite* sprite, const ScrollAnimator* animator, const ScrollAnimation* anim);
 void Sprite_MoveAction (Sprite* sprite, const MovingAnimation& anim);
 void DisplaySprites (Bitmap, const Rect&, TileLayer*);
 

@@ -4,25 +4,24 @@
 
 class Entity {
 public:
-	using OnMove = std::function<void(void)>;
 	using OnDeath = std::function<void()>;
 private:
 	Sprite*		sprite = nullptr;
 	Animator*	animator = nullptr;
-	OnMove 		onMove;
 	OnDeath		onDeath;
 	double		mi = 0, m = 0;
 	double		g = 0.7;
 	int			dx = 0, dy = 0, u = 0;
 	int 			lives = 1;
+	bool			isDead = false;
 public:
-	template <typename T>
-	void SetOnMove (const T& f)	{ onMove = f;}
 	template <typename T>
 	void SetOnDeath (const T& f)	{ onDeath = f;}
 
-	void 	Move ();
-	void 	Die ();
+	virtual void 	Do (void) = 0;
+	virtual void	Do (Sprite*) = 0;
+
+	void 	Damage ();
 
 	Sprite*	GetSprite (void)			{ return sprite;}
 	void		SetSprite (Sprite* s)	{ sprite = s;}
@@ -47,6 +46,43 @@ public:
 	
 	Entity (Sprite* _s, int _u, double _m, int _lives) : 
 		sprite(_s), u(_u), m(_m), mi(_m), lives(_lives) {}
+};
+
+class Mario : public Entity {	
+private:
+	Animator* flash 	= nullptr;
+	Animator* death	= nullptr;
+	bool 	isSuper		= false;
+	bool 	isInv			= false;
+	int	checkpoint 	= 320;
+public:
+	void Do (void) override;
+	void Do (Sprite*) override {};
+	void Init (void);
+	Mario (Sprite* _s, int _u, double _m, int _lives) :
+		Entity (_s, _u, _m, _lives) {};
+};
+
+class Goomba : public Entity {
+private:
+public:
+	void Do (void) override;
+	void Do (Sprite*) override {};
+	void Init (void);
+	Goomba (Sprite* _s, int _u, double _m, int _lives) :
+		Entity (_s, _u, _m, _lives) {};
+};
+
+class Piranha : public Entity {
+private:
+	int starty;
+	Sprite* coll;
+public:
+	void Do (void) override {};
+	void Do (Sprite*) override;
+	void Init (void);
+	Piranha (Sprite* _s, int _lives) :
+		Entity (_s, 0, 0, _lives) { starty = GetSprite()->GetY();};
 };
 
 class EntityManager {

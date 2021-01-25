@@ -15,7 +15,6 @@
 #define KEY_SEEN 1
 #define KEY_RELEASED 2
 
-
 class Game {
 	public:
 		using Action 	= std::function<void(void)>;
