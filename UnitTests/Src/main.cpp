@@ -53,7 +53,7 @@ void input (void) {
 	switch (al.event.type) {
 		case ALLEGRO_EVENT_TIMER:
 			if (al.key[ALLEGRO_KEY_Z]) {
-				player->SetDy(-8);
+				player->SetDy(-10);
 			}
 			if (al.key[ALLEGRO_KEY_LEFT]) {
 				player->SetDx(-1);
@@ -89,6 +89,7 @@ void input (void) {
 }
 void ai (void) {
 	enemy_1->Move();
+	piranha->Move();
 }
 void physics (void) {
 	auto list = EntityManager::Get().GetAll();

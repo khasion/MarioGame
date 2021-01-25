@@ -10,7 +10,7 @@ public:
 	byte 		GetTotalFrames (void) const 	{ return boxes.size();}
 	Bitmap	GetBitmap (void) const 			{ return bitmap;}
 	auto		GetId (void) const -> const std::string& { return id;}
-	const Rect& GetFrameBox (byte frameNo) const 
+	const Rect& GetFrameBox (byte frameNo) const
 						{ assert(boxes.size()>frameNo); return boxes[frameNo];}
 	void DisplayFrame (Bitmap dest, const Point& at, byte frameNo) const {
 		MaskedBlit (bitmap, GetFrameBox(frameNo), dest, at);
@@ -291,9 +291,9 @@ public:
 	void Cancel (Animator* a)
 	{ assert(a->HasFinished()); suspended.erase(a);}
 	void MarkAsRunning (Animator* a)
-	{ assert(!a->HasFinished()); suspended.erase(a); running.insert(a);}
+	{ suspended.erase(a); running.insert(a);}
 	void MarkAsSuspended (Animator* a)
-	{ assert(a->HasFinished()); running.erase(a); suspended.insert(a);}
+	{ running.erase(a); suspended.insert(a);}
 	void TimeShift (unsigned dt) {
 		for (auto* a : running) {
 			a->TimeShift(dt);
@@ -487,6 +487,10 @@ public:
 						}
 					}
 	void			SetPos (int _x, int _y) { x = _x; y = _y;}
+	int			GetX (void) { return x;}
+	int			GetWidth(void) { return frameBox.w;}
+	int			GetHeight(void){ return frameBox.h;}
+	int			GetY (void) { return y;}
 	void			SetZorder (unsigned z) 	{ zorder = z;}
 	unsigned		GetZorder (void)			{ return zorder;}
 

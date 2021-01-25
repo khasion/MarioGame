@@ -4,6 +4,7 @@
 #include "entities.hpp"
 
 extern Entity* player;
+extern Entity* piranha;
 extern Entity* enemy_1;
 extern double g;
 
@@ -31,6 +32,7 @@ namespace app {
 	};
 }
 void InitGoomba (); 
+void InitPiranha ();
 void InitPlayer ();
 void InitCollisions ();
 void InitEnemies ();

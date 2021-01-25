@@ -1,7 +1,7 @@
 #include "app.hpp"
 using namespace app;
 
-Entity* player,*enemy_1;
+Entity* player,*enemy_1, *piranha;
 double g = 0;
 
 void must_init(bool test, const char *description)
@@ -50,7 +50,8 @@ void App::Load (void) {
 
 	InitPlayer ();
 	InitGoomba ();
-	//InitCollisions ();
+	InitPiranha ();
+	InitCollisions ();
 }
 
 void App::Clear (void) {
@@ -97,22 +98,19 @@ void InitGoomba () {
 			goomba->GetQuantizer().Move(goomba->GetBox(), dx, dy);
 			if (*dx == 0) { *dx = tempdx * (-1);}
 			goomba->Move(*dx, *dy);
-			FrameRangeAnimator* newanimator;
-			FrameRangeAnimation* newanimation;
-			AnimationFilm* film;
 			int start = 0, end = 1;
 			std::string prev = goomba->GetAnimFilm()->GetId();
 			std::string curr;
 			curr = "goomba";
 			if (enemy_1->GetAnimator() && prev.compare(curr) == 0) { return;}
-			newanimator = new FrameRangeAnimator();
+			FrameRangeAnimator* newanimator = new FrameRangeAnimator();
 			newanimator->SetOnAction(
 				[goomba](Animator* animator, const Animation& anim) {
 					FrameRange_Action(goomba, animator, (const FrameRangeAnimation&) anim);
 				}
 			);
-			film = AnimationFilmHolder::Get().GetAnimationFilm(curr);
-			newanimation = new FrameRangeAnimation(curr, start, end, INT_MAX, 0, 0, 1);
+			AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm(curr);
+			FrameRangeAnimation* newanimation = new FrameRangeAnimation(curr, start, end, INT_MAX, 0, 0, 1);
 			goomba->SetAnimFilm(film);
 			enemy_1->SetAnimator(newanimator);
 			newanimator->Start(newanimation, std::time(nullptr));
@@ -120,12 +118,65 @@ void InitGoomba () {
 	);
 	enemy_1->SetOnDeath (
 		[]() {
-			SpriteManager::GetSingleton().Remove(enemy_1->GetSprite());
+			enemy_1->SetLives(enemy_1->GetLives()-1);
+			if (!enemy_1->GetLives()) {
+				SpriteManager::GetSingleton().Remove(enemy_1->GetSprite());
+				EntityManager::Get().Remove(enemy_1);
+			}
 		}
 	);
 	enemy_1->SetDx(-1);
 	EntityManager::Get().Add(enemy_1);
 }
+
+void InitPiranha () {
+	Sprite* piranha_sprite  = new Sprite (
+		57*16+8,
+		480-130,
+		AnimationFilmHolder::Get().GetAnimationFilm("piran"),
+		"PIRANHA"
+	);
+	Sprite* piranha_collision = new Sprite (
+		57*16,
+		480-130,
+		AnimationFilmHolder::Get().GetAnimationFilm("piran"),
+		"PIRANHA_COLL"
+	);
+	SpriteManager::GetSingleton().Add(piranha_sprite);
+	SpriteManager::GetSingleton().Add(piranha_collision);
+	piranha_sprite->SetHasDirectMotion(true);
+	SpriteManager::GetSingleton().Add(piranha_sprite);
+	piranha_sprite->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), piranha_sprite));
+	piranha = new Entity (piranha_sprite, 1, 1, 1);
+	piranha->SetOnMove(
+		[piranha_sprite]() {
+			Sprite* s = piranha->GetSprite();
+			Sprite* m = player->GetSprite();
+			if (s->GetX() <= m->GetX()
+			&& s->GetX() + s->GetWidth() >= m->GetX()) { 
+				AnimatorManager::GetSingleton().MarkAsSuspended(piranha->GetAnimator());
+			}
+			else {
+				AnimatorManager::GetSingleton().MarkAsRunning(piranha->GetAnimator());
+			}
+			if (s->GetFrame() == 0) {
+				s->SetPos(s->GetX(), 480-130);
+			}
+		}
+	);
+	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("piran");
+	FrameRangeAnimation* animation = new FrameRangeAnimation("piran", 0, 9, INT_MAX, 0, -2, 1);
+	FrameRangeAnimator*	animator = new FrameRangeAnimator();
+	animator->SetOnAction(
+		[piranha_sprite](Animator* animator, const Animation& anim) {
+			FrameRange_Action(piranha_sprite, animator, (const FrameRangeAnimation&) anim);
+		}
+	);
+	piranha_sprite->SetAnimFilm(film);
+	piranha->SetAnimator(animator);
+	animator->Start(animation, std::time(nullptr));
+}
+
 void InitPlayer () {
 	Sprite* mario = new Sprite(
 		320,
@@ -151,7 +202,6 @@ void InitPlayer () {
 	[]() {
 		std::cout << "stop falling." << std::endl;
 	});
-
 
 	player = new Entity(mario, 2, 1, 1);
 	player->SetOnMove (
@@ -202,7 +252,11 @@ void InitPlayer () {
 	);
 	player->SetOnDeath (
 		[]() {
-			SpriteManager::GetSingleton().Remove(player->GetSprite());
+			player->SetLives(player->GetLives()-1);
+			if (!player->GetLives()) {
+				SpriteManager::GetSingleton().Remove(player->GetSprite());
+				EntityManager::Get().Remove(player);
+			}
 		}
 	);
 	EntityManager::Get().Add(player);
@@ -213,10 +267,21 @@ void InitCollisions (void) {
 		player->GetSprite(),
 		enemy_1->GetSprite(),
 		[](Sprite* s1, Sprite* s2) {
-			CollisionChecker::GetSingleton().Cancel(s1, s2);
+			if (player->GetLives() <= 0
+			|| enemy_1->GetLives() <= 0) { return;}
 			if (s1->GetGravityHandler().IsFalling()) {
 				enemy_1->Die();
 			}
 			else { player->Die();}
 		});
+		CollisionChecker::GetSingleton().Register(
+			player->GetSprite(),
+			SpriteManager::GetSingleton().GetTypeList("PIRANHA_COLL").front(),
+			[](Sprite* s1, Sprite* s2) {
+				if (player->GetLives() <= 0
+				|| piranha->GetLives() <= 0) { return;}
+				if (piranha->GetSprite()->GetFrame() <= 1) { return;}
+				player->Die();
+			}
+		);
 }
