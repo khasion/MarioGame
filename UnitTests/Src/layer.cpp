@@ -1,6 +1,7 @@
 #include "layer.hpp"
 
 TileLayer* tlayer;
+std::vector<std::pair<int, int>> coins_xy;
 
 void GridLayer::FilterGridMotionDown (const Rect& r, int* dy) {
 	auto y2 = r.y + r.h + 1;
@@ -124,7 +125,12 @@ bool TileLayer::ReadText (std::string path) {
 		int j = 0;
 		for (auto it = input.cbegin(); it!=input.cend(); ++it) {
 			if (*it == ',') {
-				SetTile(j++, i, std::stoi(temp));
+				Index index = std::stoi(temp);
+				if (index == 26) {
+					coins_xy.push_back(std::make_pair(MUL_TILE_WIDTH(j), MUL_TILE_HEIGHT(i)));
+					index = 239;
+				}
+				SetTile(j++, i, index);
 				temp.clear();
 			}
 			else {

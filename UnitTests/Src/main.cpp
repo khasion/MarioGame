@@ -110,22 +110,29 @@ void input (void) {
 	if (!al.key[ALLEGRO_KEY_RIGHT] && !al.key[ALLEGRO_KEY_LEFT]) { player->SetDx(0);}
 }
 void ai (void) {
-	enemy_1->Do();
-	piranha->Do(player->GetSprite());
-	for (int i = 0; i < 10; i++) {
-		coins[i]->Do();
+	auto l = EntityManager::Get().GetAll();
+	for (auto it = l.begin(); it != l.end(); ++it) {
+		if ((*it).first.compare("player") != 0) {
+			if (!(*it).first.compare("piran") ) {
+				(*it).second->Do(player->GetSprite());
+			}
+			else {
+				(*it).second->Do();
+			}
+		}
 	}
 }
 void physics (void) {
 	auto list = EntityManager::Get().GetAll();
 	for (auto it = list.begin(); it != list.end(); ++it) {
-		Sprite* s = (*it)->GetSprite();
+		Entity* entity = (*it).second;
+		Sprite* s = entity->GetSprite();
 		if (s->GetGravityHandler().IsFalling()) {
-			(*it)->SetDy(*((*it)->GetDy())+(*it)->GetMass()+(*it)->GetG());
-			(*it)->SetMass((*it)->GetMass()+(*it)->GetG());
-			if (*(*it)->GetDy() > 16) { (*it)->SetDy(16);}
+			entity->SetDy(*(entity->GetDy())+entity->GetMass()+entity->GetG());
+			entity->SetMass(entity->GetMass()+entity->GetG());
+			if (*entity->GetDy() > 16) { entity->SetDy(16);}
 		}
-		else { (*it)->ResetMass();}
+		else { entity->ResetMass();}
 	}
 	player->Do();
 	tlayer->Scroll(*player->GetDx(), *player->GetDy());

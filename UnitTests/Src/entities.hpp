@@ -120,16 +120,16 @@ public:
 
 class EntityManager {
 private:
-	std::set<Entity*> entitySet;
+	std::map<std::string, Entity*> entityMap;
 	static EntityManager singleton;
 	~EntityManager () {}
 	EntityManager (void) {}
 public:
 	static EntityManager& Get(void) 	{ return singleton;}
 
-	void 					Add (Entity* e) 	{ entitySet.insert(e);}
-	void					Remove (Entity* e){ entitySet.erase(e);}
-	std::set<Entity*>	GetAll (void)		{ return entitySet;}
+	void 	Add (std::string str, Entity* e) 	{ entityMap.insert(std::make_pair(str, e));}
+	void	Remove (std::string str, Entity* e)	{ entityMap.erase(str);}
+	auto	GetAll (void)	{ return entityMap;}
 };
 
 #endif

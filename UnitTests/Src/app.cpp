@@ -70,24 +70,26 @@ void InitGoomba () {
 			enemy_1->SetLives(enemy_1->GetLives()-1);
 			if (!enemy_1->GetLives()) {
 				SpriteManager::GetSingleton().Remove(enemy_1->GetSprite());
-				EntityManager::Get().Remove(enemy_1);
+				EntityManager::Get().Remove("goomba1", enemy_1);
 			}
 		}
 	);
 	enemy_1->SetDx(-1);
-	EntityManager::Get().Add(enemy_1);
+	EntityManager::Get().Add("ai", enemy_1);
 }
 
 void InitCoin () {
-	coins = (Coin**) malloc(sizeof(Coin*)*10);
-	for (int i=1; i <= 10; i++) {
-		coins[i-1] = new Coin(i*16, 480-130);
+	int i = 0;
+	for (auto it = coins_xy.begin(); it != coins_xy.end(); ++it) {
+		int x = (*it).first, y = (*it).second;
+		EntityManager::Get().Add("coin"+i, new Coin(x, y));
+		i++;
 	}
 }
 
 void InitPiranha () {
 	piranha = new Piranha (57*16+8, 480-130, 1);
-	EntityManager::Get().Add(piranha);
+	EntityManager::Get().Add("piran", piranha);
 }
 
 void InitPlayer () {
@@ -121,7 +123,7 @@ void InitPlayer () {
 			scroll_animator->Start(scroll_animation, std::time(nullptr));
 		}
 	);
-	EntityManager::Get().Add(player);
+	EntityManager::Get().Add("player", player);
 }
 
 void InitCollisions (void) {
@@ -146,4 +148,5 @@ void InitCollisions (void) {
 			player->Damage();
 		}
 	);
+
 }

@@ -85,6 +85,8 @@ public:
 	GridLayer (unsigned rows, unsigned cols);
 };
 
+extern std::vector<std::pair<int, int>> coins_xy;
+
 class TileLayer {
 private:
 	TileMap 			map;
