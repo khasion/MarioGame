@@ -44,11 +44,13 @@ void render (void) {
 			case END:
 				break;
 		}
-		int i = 1;
-		for (auto it = messages.begin(); it != messages.end(); ++it) {
-			al_draw_text(al.font,
-			al_map_rgb(255, 255, 255), 190, 120+(16*i++), 0,
-			(*it).c_str());
+		if (gaem->IsPaused() || gaem->GetState() == START) {
+			int i = 1;
+			for (auto it = messages.begin(); it != messages.end(); ++it) {
+				al_draw_text(al.font,
+				al_map_rgb(255, 255, 255), 190, 120+(16*i++), 0,
+				(*it).c_str());
+			}
 		}
 		al_flip_display();
 	}
@@ -77,14 +79,17 @@ void input (void) {
 			if (al.key[ALLEGRO_KEY_ESCAPE]) {
 				if (!gaem->IsPaused()) {
 					gaem->Pause(std::time(nullptr));
-					messages.push_back("Press ENTER to continue.");
 				}
 			}
 			if (al.key[ALLEGRO_KEY_ENTER]) {
-				if (gaem->GetState() == START) { gaem->SetState(PLAY);}
+				if (gaem->GetState() == START) { 
+					gaem->SetState(PLAY);
+					player->SetLives(1);
+					//AnimatorManager::GetSingleton().TimeShift(gaem->GetGameTime()-gaem->GetPauseTime());
+				}
 				if (gaem->IsPaused()) {
 					gaem->Resume();
-					messages.clear();
+					//AnimatorManager::GetSingleton().TimeShift(gaem->GetGameTime()-gaem->GetPauseTime());
 				}
 			}
 			for (int i = 0; i < ALLEGRO_KEY_MAX; i++) {
@@ -139,5 +144,8 @@ void user (void) {
 			player->GetStartPos().y - 64
 		);
 		tlayer->SetViewWindow({player->GetStartPos().x - 320, 0, 640, 480});
+		if (player->GetLives() < 0) {
+			gaem->SetState(START);
+		}
 	}
 }
