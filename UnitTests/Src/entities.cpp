@@ -217,7 +217,7 @@ void Coin::Init (void) {
 	coin_sprite->SetHasDirectMotion(true);
 	coin_sprite->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), coin_sprite));
 	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("coin");
-	FrameRangeAnimation* animation = new FrameRangeAnimation("piran", 0, 2, INT_MAX, 0, 0, 1);
+	FrameRangeAnimation* animation = new FrameRangeAnimation("coin", 0, 2, INT_MAX, 0, 0, 1);
 	FrameRangeAnimator*	animator = new FrameRangeAnimator();
 	animator->SetOnAction(
 		[coin_sprite](Animator* animator, const Animation& anim) {
@@ -226,6 +226,31 @@ void Coin::Init (void) {
 	);
 	sprite = coin_sprite;
 	coin_sprite->SetAnimFilm(film);
+	SetAnimator(animator);
+	animator->Start(animation, std::time(nullptr));
+}
+
+void Box::Init (void) {
+	Sprite* coin_sprite  = new Sprite (
+		startx,
+		starty,
+		AnimationFilmHolder::Get().GetAnimationFilm("Box"),
+		"BOX"
+	);
+
+	SpriteManager::GetSingleton().Add(box_sprite);
+	box_sprite->SetHasDirectMotion(true);
+	box_sprite->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), box_sprite));
+	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("box");
+	FrameRangeAnimation* animation = new FrameRangeAnimation("box", 0, 2, INT_MAX, 0, 0, 1);
+	FrameRangeAnimator*	animator = new FrameRangeAnimator();
+	animator->SetOnAction(
+		[box_sprite](Animator* animator, const Animation& anim) {
+			FrameRange_Action(box_sprite, animator, (const FrameRangeAnimation&) anim);
+		}
+	);
+	sprite = box_sprite;
+	box_sprite->SetAnimFilm(film);
 	SetAnimator(animator);
 	animator->Start(animation, std::time(nullptr));
 }
