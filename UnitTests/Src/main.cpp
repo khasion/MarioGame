@@ -32,22 +32,24 @@ int main()
 	return 0;
 }
 
-std::string message = "";
-
 void render (void) {
 	if (al_is_event_queue_empty(al.queue)) {
-		if (player->GetLives() >= 0) {
-			tlayer->Display(al_get_target_bitmap(), Rect {0, 0, 0, 0});
+		switch (gaem->GetState()) {
+			case START:
+				BitmapClear(al_get_target_bitmap(), {0, 0, 0});
+				break;
+			case PLAY:
+				tlayer->Display(al_get_target_bitmap(), Rect {0, 0, 0, 0});
+				break;
+			case END:
+				break;
 		}
-		else {
-			BitmapClear(al_get_target_bitmap(), RGB {0, 255, 255});
+		int i = 1;
+		for (auto it = messages.begin(); it != messages.end(); ++it) {
+			al_draw_text(al.font,
+			al_map_rgb(255, 255, 255), 190, 120+(16*i++), 0,
+			(*it).c_str());
 		}
-		if (message.size() > 0) { 
-			al_draw_text(al.font, 
-			al_map_rgb(0, 0, 0), 220, 120, 0,
-			message.c_str());
-		}
-
 		al_flip_display();
 	}
 }
@@ -75,13 +77,14 @@ void input (void) {
 			if (al.key[ALLEGRO_KEY_ESCAPE]) {
 				if (!gaem->IsPaused()) {
 					gaem->Pause(std::time(nullptr));
-					message = "Press ENTER to continue.";
+					messages.push_back("Press ENTER to continue.");
 				}
 			}
 			if (al.key[ALLEGRO_KEY_ENTER]) {
+				if (gaem->GetState() == START) { gaem->SetState(PLAY);}
 				if (gaem->IsPaused()) {
 					gaem->Resume();
-					message = "";
+					messages.clear();
 				}
 			}
 			for (int i = 0; i < ALLEGRO_KEY_MAX; i++) {
@@ -129,4 +132,12 @@ void collisions (void) {
 	CollisionChecker::GetSingleton().Check();
 }
 void user (void) {
+	if (player->IsDead()) {
+		player->SetDead(false);
+		player->GetSprite()->SetPos(
+			player->GetStartPos().x,
+			player->GetStartPos().y - 64
+		);
+		tlayer->SetViewWindow({player->GetStartPos().x - 320, 0, 640, 480});
+	}
 }

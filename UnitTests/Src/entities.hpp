@@ -4,21 +4,20 @@
 
 class Entity {
 public:
-	using OnDeath = std::function<void()>;
+	using OnDamage = std::function<void()>;
 protected:
 	Sprite*		sprite = nullptr;
 	Animator*	animator = nullptr;
-	OnDeath		onDeath;
+	OnDamage		onDamage;
 	double		mi = 0, m = 0;
 	double		g = 0.7;
 	int			dx = 0, dy = 0, u = 0;
 	int			startx = 0, starty = 0;
 	int 			lives = 1;
-	int 			coins = 0;
-	bool			isDead = false;
+	bool			isDying = false;
 public:
 	template <typename T>
-	void SetOnDeath (const T& f)	{ onDeath = f;}
+	void SetOnDamage (const T& f)	{ onDamage = f;}
 
 	virtual void 	Do (void) = 0;
 	virtual void	Do (Sprite*) = 0;
@@ -27,8 +26,6 @@ public:
 
 	Sprite*	GetSprite (void)			{ return sprite;}
 	void		SetSprite (Sprite* s)	{ sprite = s;}
-	int 	GetCoins (void)		{ return coins;}
-	void 	SetCoins (int c)	{ coins = c;}
 
 	int 	GetLives (void) 	{ return lives;}
 	void 	SetLives (int l)	{ lives = l;}
@@ -47,10 +44,14 @@ public:
 	void		SetMass(double _m){ m = _m;}
 	void 		SetSpeed (int _u)	{ u = _u;}
 	void		SetG(int _g)		{ g = _g;}
-	void 		SetCoins (int _c)	{c = _c};
 	void		ResetMass (void)	{ m = mi;}
+
+	Point		GetStartPos (void){ return {startx, starty};}
+
+	void 		SetDead (bool b)	{isDying = b;}
+	bool		IsDead (void)		{ return isDying;}
 	
-	Entity (int _x, int _y, int _u,int _c double _m, int _coins,int _lives) : 
+	Entity (int _x, int _y, int _u, double _m, int _lives) : 
 		startx(_x), starty(_y),
 		u(_u), m(_m), mi(_m), lives(_lives) {}
 };
@@ -61,13 +62,18 @@ private:
 	Animator* death	= nullptr;
 	bool 	isSuper		= false;
 	bool 	isInv			= false;
+	bool	isHit			= false;
 	int	checkpoint 	= 320;
+	int	coins 		= 0;
 public:
 	void Do (void) override;
 	void Do (Sprite*) override {};
 	void Init (void);
-	Mario (int _x, int _y, int _u, double _m,int _coins int _lives) :
-		Entity (_x, _y, _u, _m,_coins , _lives) {Init();};
+	void SetCoins (int _c)	{coins = _c;};
+	void SetHit (bool b)	{ isHit = b;}
+	bool IsHit (void)		{ return isHit;}
+	Mario (int _x, int _y, int _u, double _m, int _lives) :
+		Entity (_x, _y, _u, _m, _lives) {Init();};
 };
 
 class Goomba : public Entity {
@@ -100,15 +106,15 @@ public:
 	Coin (int _x, int _y) :
 		Entity (_x, _y, 0, 0, 1) {Init();};
 };
+
 class Box : public Entity {
 private:
-	int number_of_coins=0;
 public:
 	void Do (void) override;
 	void Do (Sprite*) override {};
 	void Init (void);
-	Coin (int _x, int _y,int number_of_coins) :
-		Entity (_x, _y, 0, 0, 1) {Init();};
+	Box (int _x, int _y, int _l) :
+		Entity (_x, _y, 0, 0, _l) {Init();};
 };
 
 

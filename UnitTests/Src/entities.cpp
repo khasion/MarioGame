@@ -3,7 +3,7 @@
 EntityManager EntityManager::singleton;
 
 void Entity::Damage () {
-	if (onDeath) onDeath();
+	if (onDamage) onDamage();
 }
 
 void Entity::SetAnimator (Animator* anim) {
@@ -231,7 +231,7 @@ void Coin::Init (void) {
 }
 
 void Box::Init (void) {
-	Sprite* coin_sprite  = new Sprite (
+	Sprite* box_sprite  = new Sprite (
 		startx,
 		starty,
 		AnimationFilmHolder::Get().GetAnimationFilm("Box"),

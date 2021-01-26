@@ -3,7 +3,7 @@
 #include "game.hpp"
 #include "entities.hpp"
 
-extern Entity* player;
+extern Mario* player;
 extern Entity* piranha;
 extern Entity* enemy_1;
 extern Coin** coins;

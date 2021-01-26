@@ -15,6 +15,12 @@
 #define KEY_SEEN 1
 #define KEY_RELEASED 2
 
+enum GameState {
+	START, PLAY, END
+};
+
+extern std::vector<std::string> messages;
+
 class Game {
 	public:
 		using Action 	= std::function<void(void)>;
@@ -23,6 +29,7 @@ class Game {
 		Action render, anim, input, ai, physics, destruct, collisions, user, pauseResume;
 		Pred 	done;
 		bool 	isPaused = false;
+		GameState state;
 		uint64_t pauseTime = 0;
 		void 	Invoke (const Action& f) { if (f) f();}
 	public:
@@ -64,6 +71,9 @@ class Game {
 		bool IsPaused (void) const { return isPaused;}
 		uint64_t GetPauseTime (void) const { return pauseTime;}
 		uint64_t GetGameTime (void) const { return std::time(nullptr);}
+
+		GameState 	GetState (void) 			{ return state;}
+		void 			SetState (GameState s)	{ state = s;}
 };
 
 void InstallPauseResumeHandler (Game& game);

@@ -1,7 +1,8 @@
 #include "app.hpp"
 using namespace app;
 
-Entity* player,*enemy_1, *piranha;
+Entity* enemy_1, *piranha;
+Mario* player;
 Coin** coins;
 double g = 0;
 
@@ -55,9 +56,6 @@ void App::Load (void) {
 }
 
 void App::Clear (void) {
-	exit(0);
-	AnimationFilmHolder::Get().Destroy();
-	std::cout << "EDW TRWEI SEG" << std::endl;
 	free(al.monitor);
 	al_destroy_font(al.font);
 	al_destroy_display(al.disp);
@@ -67,7 +65,7 @@ void App::Clear (void) {
 
 void InitGoomba () {
 	enemy_1 = new Goomba(500, 430, 1, 3, 1);
-	enemy_1->SetOnDeath (
+	enemy_1->SetOnDamage (
 		[]() {
 			enemy_1->SetLives(enemy_1->GetLives()-1);
 			if (!enemy_1->GetLives()) {
@@ -89,17 +87,14 @@ void InitCoin () {
 
 void InitPiranha () {
 	piranha = new Piranha (57*16+8, 480-130, 1);
+	EntityManager::Get().Add(piranha);
 }
 
 void InitPlayer () {
 	player = new Mario(320, 430, 2, 1, 1);
-	player->SetOnDeath (
+	player->SetOnDamage (
 		[]() {
-			player->SetLives(player->GetLives()-1);
-			/*if (!player->GetLives()) {
-				SpriteManager::GetSingleton().Remove(player->GetSprite());
-				EntityManager::Get().Remove(player);
-			}*/
+			player->SetHit(true);
 			std::vector<ScrollEntry> entry;
 			std::string str = player->GetSprite()->GetAnimFilm()->GetId();
 			for (int i = 0; i < 60; i++) {
@@ -116,6 +111,13 @@ void InitPlayer () {
 					tlayer->Scroll(a->GetDx(an->GetCurrRep()), a->GetDy(an->GetCurrRep()));
 				}
 			);
+			scroll_animator->SetOnFinish(
+				[] (Animator* a) {
+					player->SetHit(false);
+					player->SetLives(player->GetLives()-1);
+					if (player->GetLives() <= 0) {player->SetDead(true);}
+				}
+			);
 			scroll_animator->Start(scroll_animation, std::time(nullptr));
 		}
 	);
@@ -127,7 +129,7 @@ void InitCollisions (void) {
 		player->GetSprite(),
 		enemy_1->GetSprite(),
 		[](Sprite* s1, Sprite* s2) {
-			if (player->GetLives() <= 0
+			if (player->IsHit()
 			|| enemy_1->GetLives() <= 0) { return;}
 			if (s1->GetGravityHandler().IsFalling()) {
 				enemy_1->Damage();
@@ -138,7 +140,7 @@ void InitCollisions (void) {
 		player->GetSprite(),
 		SpriteManager::GetSingleton().GetTypeList("PIRANHA_COLL").front(),
 		[](Sprite* s1, Sprite* s2) {
-			if (player->GetLives() <= 0
+			if (player->IsHit()
 			|| piranha->GetLives() <= 0) { return;}
 			if (piranha->GetSprite()->GetFrame() >= piranha->GetSprite()->GetAnimFilm()->GetTotalFrames()-2) { return;}
 			player->Damage();

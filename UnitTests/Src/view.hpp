@@ -85,9 +85,6 @@ public:
 		return b;
 	}
 	void		CleanUp (void) {
-		for (auto& i : bitmaps) {
-			BitmapDestroy(i.second);
-		}
 		bitmaps.clear();
 	}
 	BitmapLoader (void) {}
