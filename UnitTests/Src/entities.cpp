@@ -103,3 +103,26 @@ void Piranha::Do (Sprite* mario) {
 		s->SetPos(s->GetX(), starty);
 	}
 }
+void Coin::Do (Sprite* mario) {
+	Sprite* s = GetSprite();
+	Sprite* m = mario;
+	if (s->GetX() - 16 <= m->GetX()
+	&& s->GetX() + s->GetWidth() + 16 >= m->GetX()
+	&& s->GetFrame() >= s->GetAnimFilm()->GetTotalFrames()-2) { 
+		GetAnimator()->Stop();
+	}
+	else {
+		if (GetAnimator()->HasFinished()) {
+			 //FrameRangeAnimation (id, start, end, GetReps(), GetDx(), GetDy(), GetDelay());
+			FrameRangeAnimation* f = new FrameRangeAnimation("coin", 0, 2, INT_MAX, 0, 0, 1);
+			((FrameRangeAnimator*)GetAnimator())->Start(
+				f,
+				std::time(nullptr)
+			);
+			s->SetPos(s->GetX(),position_y);
+		}
+	}
+	if (s->GetFrame() == 0) {
+		s->SetPos(s->GetX(),position_y);
+	}
+}

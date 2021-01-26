@@ -104,6 +104,7 @@ void input (void) {
 void ai (void) {
 	enemy_1->Do();
 	piranha->Do(player->GetSprite());
+	coin->Do(player->GetSprite());
 }
 void physics (void) {
 	auto list = EntityManager::Get().GetAll();

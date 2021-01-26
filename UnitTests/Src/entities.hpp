@@ -85,6 +85,20 @@ public:
 		Entity (_s, 0, 0, _lives) { starty = GetSprite()->GetY();};
 };
 
+class Coin : public Entity {
+private:
+	int position_y,position_x;
+	Sprite* coll;
+public:
+	void Do (void) override {};
+	void Do (Sprite*) override;
+	void Init (void);
+	Coin (Sprite* _s) :
+		Entity (_s, 0, 0, 1) { position_x = GetSprite()->GetX();
+								position_y = GetSprite()->GetY();};
+};
+
+
 class EntityManager {
 private:
 	std::set<Entity*> entitySet;

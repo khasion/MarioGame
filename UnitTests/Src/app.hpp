@@ -6,6 +6,7 @@
 extern Entity* player;
 extern Entity* piranha;
 extern Entity* enemy_1;
+extern Entity* coin;
 extern double g;
 
 namespace app {
@@ -34,6 +35,7 @@ namespace app {
 void InitGoomba (); 
 void InitPiranha ();
 void InitPlayer ();
+void InitCoin ();
 void InitCollisions ();
 void InitEnemies ();
 #endif

@@ -1,7 +1,7 @@
 #include "app.hpp"
 using namespace app;
 
-Entity* player,*enemy_1, *piranha;
+Entity* player,*enemy_1, *piranha,*coin;
 double g = 0;
 
 void must_init(bool test, const char *description)
@@ -49,6 +49,7 @@ void App::Load (void) {
 	InitPlayer ();
 	InitGoomba ();
 	InitPiranha ();
+	InitCoin ();
 	InitCollisions ();
 }
 
@@ -100,6 +101,40 @@ void InitGoomba () {
 	);
 	enemy_1->SetDx(-1);
 	EntityManager::Get().Add(enemy_1);
+}
+
+void InitCoin () {
+	Sprite* coin_sprite  = new Sprite (
+		57,
+		480-130,
+		AnimationFilmHolder::Get().GetAnimationFilm("coin"),
+		"COIN"
+	);
+	Sprite* coin_collision = new Sprite (
+		57,
+		480-132,
+		AnimationFilmHolder::Get().GetAnimationFilm("coin"),
+		"COIN_COLL"
+	);
+
+	coin_collision->SetVisibility(false);
+	SpriteManager::GetSingleton().Add(coin_sprite);
+	SpriteManager::GetSingleton().Add(coin_collision);
+	coin_sprite->SetHasDirectMotion(true);
+	SpriteManager::GetSingleton().Add(coin_sprite);
+	coin_sprite->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), coin_sprite));
+	coin = new Coin (coin_sprite);
+	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("coin");
+	FrameRangeAnimation* animation = new FrameRangeAnimation("piran", 0, 2, INT_MAX, 0, 0, 1);
+	FrameRangeAnimator*	animator = new FrameRangeAnimator();
+	animator->SetOnAction(
+		[coin_sprite](Animator* animator, const Animation& anim) {
+			FrameRange_Action(coin_sprite, animator, (const FrameRangeAnimation&) anim);
+		}
+	);
+	coin_sprite->SetAnimFilm(film);
+	coin->SetAnimator(animator);
+	animator->Start(animation, std::time(nullptr));
 }
 
 void InitPiranha () {
