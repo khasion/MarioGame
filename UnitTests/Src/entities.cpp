@@ -113,6 +113,16 @@ void Coin::Do () {
 	);
 }
 
+void Box::Do () {
+	Sprite* s = GetSprite();
+	if (GetAnimator()) { return;}
+	FrameRangeAnimation* f = new FrameRangeAnimation("boxes", 0, 2, INT_MAX, 0, 0, 1);
+	((FrameRangeAnimator*)GetAnimator())->Start(
+		f,
+		std::time(nullptr)
+	);
+}
+
 void Mario::Init (void) {
 	Sprite* mario = new Sprite(
 		startx,
@@ -234,15 +244,15 @@ void Box::Init (void) {
 	Sprite* box_sprite  = new Sprite (
 		startx,
 		starty,
-		AnimationFilmHolder::Get().GetAnimationFilm("Box"),
+		AnimationFilmHolder::Get().GetAnimationFilm("boxes"),
 		"BOX"
 	);
 
 	SpriteManager::GetSingleton().Add(box_sprite);
 	box_sprite->SetHasDirectMotion(true);
 	box_sprite->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), box_sprite));
-	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("box");
-	FrameRangeAnimation* animation = new FrameRangeAnimation("box", 0, 2, INT_MAX, 0, 0, 1);
+	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("boxes");
+	FrameRangeAnimation* animation = new FrameRangeAnimation("boxes", 0, 2, INT_MAX, 0, 0, 1);
 	FrameRangeAnimator*	animator = new FrameRangeAnimator();
 	animator->SetOnAction(
 		[box_sprite](Animator* animator, const Animation& anim) {

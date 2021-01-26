@@ -2,6 +2,7 @@
 
 TileLayer* tlayer;
 std::vector<std::pair<int, int>> coins_xy;
+std::vector<std::pair<int, int>> boxes_xy;
 
 void GridLayer::FilterGridMotionDown (const Rect& r, int* dy) {
 	auto y2 = r.y + r.h + 1;
@@ -129,6 +130,10 @@ bool TileLayer::ReadText (std::string path) {
 				if (index == 26) {
 					coins_xy.push_back(std::make_pair(MUL_TILE_WIDTH(j), MUL_TILE_HEIGHT(i)));
 					index = 239;
+				}
+				if (index == 0) {
+					boxes_xy.push_back(std::make_pair(MUL_TILE_WIDTH(j), MUL_TILE_HEIGHT(i)));
+					index = 240;
 				}
 				SetTile(j++, i, index);
 				temp.clear();

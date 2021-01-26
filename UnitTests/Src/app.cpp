@@ -82,7 +82,13 @@ void InitCoin () {
 	int i = 0;
 	for (auto it = coins_xy.begin(); it != coins_xy.end(); ++it) {
 		int x = (*it).first, y = (*it).second;
-		EntityManager::Get().Add("coin"+i, new Coin(x, y));
+		EntityManager::Get().Add("coin"+std::to_string(i), new Coin(x, y));
+		i++;
+	}
+	i = 0;
+	for (auto it = boxes_xy.begin(); it != boxes_xy.end(); ++it) {
+		int x = (*it).first, y = (*it).second;
+		EntityManager::Get().Add("box"+std::to_string(i), new Box(x, y, 10));
 		i++;
 	}
 }

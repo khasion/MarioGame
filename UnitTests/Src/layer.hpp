@@ -86,6 +86,7 @@ public:
 };
 
 extern std::vector<std::pair<int, int>> coins_xy;
+extern std::vector<std::pair<int, int>> boxes_xy;
 
 class TileLayer {
 private:
