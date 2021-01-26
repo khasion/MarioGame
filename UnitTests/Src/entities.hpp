@@ -5,13 +5,14 @@
 class Entity {
 public:
 	using OnDeath = std::function<void()>;
-private:
+protected:
 	Sprite*		sprite = nullptr;
 	Animator*	animator = nullptr;
 	OnDeath		onDeath;
 	double		mi = 0, m = 0;
 	double		g = 0.7;
 	int			dx = 0, dy = 0, u = 0;
+	int			startx = 0, starty = 0;
 	int 			lives = 1;
 	bool			isDead = false;
 public:
@@ -44,8 +45,9 @@ public:
 	void		SetG(int _g)		{ g = _g;}
 	void		ResetMass (void)	{ m = mi;}
 	
-	Entity (Sprite* _s, int _u, double _m, int _lives) : 
-		sprite(_s), u(_u), m(_m), mi(_m), lives(_lives) {}
+	Entity (int _x, int _y, int _u, double _m, int _lives) : 
+		startx(_x), starty(_y),
+		u(_u), m(_m), mi(_m), lives(_lives) {}
 };
 
 class Mario : public Entity {	
@@ -59,8 +61,8 @@ public:
 	void Do (void) override;
 	void Do (Sprite*) override {};
 	void Init (void);
-	Mario (Sprite* _s, int _u, double _m, int _lives) :
-		Entity (_s, _u, _m, _lives) {};
+	Mario (int _x, int _y, int _u, double _m, int _lives) :
+		Entity (_x, _y, _u, _m, _lives) {Init();};
 };
 
 class Goomba : public Entity {
@@ -69,33 +71,29 @@ public:
 	void Do (void) override;
 	void Do (Sprite*) override {};
 	void Init (void);
-	Goomba (Sprite* _s, int _u, double _m, int _lives) :
-		Entity (_s, _u, _m, _lives) {};
+	Goomba (int _x, int _y, int _u, double _m, int _lives) :
+		Entity (_x, _y, _u, _m, _lives) {Init();};
 };
 
 class Piranha : public Entity {
 private:
-	int starty;
 	Sprite* coll;
 public:
 	void Do (void) override {};
 	void Do (Sprite*) override;
 	void Init (void);
-	Piranha (Sprite* _s, int _lives) :
-		Entity (_s, 0, 0, _lives) { starty = GetSprite()->GetY();};
+	Piranha (int _x, int _y, int _lives) :
+		Entity (_x, _y, 0, 0, _lives) { Init();};
 };
 
 class Coin : public Entity {
 private:
-	int position_y,position_x;
-	Sprite* coll;
 public:
-	void Do (void) override {};
-	void Do (Sprite*) override;
+	void Do (void) override;
+	void Do (Sprite*) override {};
 	void Init (void);
-	Coin (Sprite* _s) :
-		Entity (_s, 0, 0, 1) { position_x = GetSprite()->GetX();
-								position_y = GetSprite()->GetY();};
+	Coin (int _x, int _y) :
+		Entity (_x, _y, 0, 0, 1) {Init();};
 };
 
 

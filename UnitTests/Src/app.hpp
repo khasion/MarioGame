@@ -6,7 +6,7 @@
 extern Entity* player;
 extern Entity* piranha;
 extern Entity* enemy_1;
-extern Entity* coin;
+extern Coin** coins;
 extern double g;
 
 namespace app {
@@ -32,7 +32,7 @@ namespace app {
 		}
 	};
 }
-void InitGoomba (); 
+void InitGoomba ();
 void InitPiranha ();
 void InitPlayer ();
 void InitCoin ();

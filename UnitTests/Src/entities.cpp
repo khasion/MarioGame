@@ -103,26 +103,129 @@ void Piranha::Do (Sprite* mario) {
 		s->SetPos(s->GetX(), starty);
 	}
 }
-void Coin::Do (Sprite* mario) {
+void Coin::Do () {
 	Sprite* s = GetSprite();
-	Sprite* m = mario;
-	if (s->GetX() - 16 <= m->GetX()
-	&& s->GetX() + s->GetWidth() + 16 >= m->GetX()
-	&& s->GetFrame() >= s->GetAnimFilm()->GetTotalFrames()-2) { 
-		GetAnimator()->Stop();
-	}
-	else {
-		if (GetAnimator()->HasFinished()) {
-			 //FrameRangeAnimation (id, start, end, GetReps(), GetDx(), GetDy(), GetDelay());
-			FrameRangeAnimation* f = new FrameRangeAnimation("coin", 0, 2, INT_MAX, 0, 0, 1);
-			((FrameRangeAnimator*)GetAnimator())->Start(
-				f,
-				std::time(nullptr)
-			);
-			s->SetPos(s->GetX(),position_y);
+	if (GetAnimator()) { return;}
+	FrameRangeAnimation* f = new FrameRangeAnimation("coin", 0, 2, INT_MAX, 0, 0, 1);
+	((FrameRangeAnimator*)GetAnimator())->Start(
+		f,
+		std::time(nullptr)
+	);
+}
+
+void Mario::Init (void) {
+	Sprite* mario = new Sprite(
+		startx,
+		starty,
+		AnimationFilmHolder::Get().GetAnimationFilm("mario_standl"),
+		"MARIO"
+	);
+	SpriteManager::GetSingleton().Add(mario);
+	mario->PrepareSpriteGravityHandler(tlayer->GetGridLayer(), mario);
+	mario->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), mario));
+	mario->GetGravityHandler().SetOnSolidGround(
+		[mario](const Rect& r) {
+			int dx = 0, dy = 1;
+			mario->GetQuantizer().Move(r, &dx, &dy);
+			return (!dy) ? true : false;
 		}
-	}
-	if (s->GetFrame() == 0) {
-		s->SetPos(s->GetX(),position_y);
-	}
+	);
+	mario->GetGravityHandler().SetOnStartFalling(
+		[]() {
+			std::cout << "start falling." << std::endl;
+		}
+	);
+	mario->GetGravityHandler().SetOnStopFalling(
+		[]() {
+			std::cout << "stop falling." << std::endl;
+		}
+	);
+	SetSprite(mario);
+}
+
+void Goomba::Init (void) {
+	Sprite* goomba = new Sprite(
+		startx,
+		starty,
+		AnimationFilmHolder::Get().GetAnimationFilm("goomba"),
+		"GOOMBA"
+	);
+	SpriteManager::GetSingleton().Add(goomba);
+
+	goomba->PrepareSpriteGravityHandler(tlayer->GetGridLayer(), goomba);
+	goomba->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), goomba));
+	goomba->GetGravityHandler().SetOnSolidGround(
+	[goomba](const Rect& r) {
+		int dx = 0, dy = 1;
+		goomba->GetQuantizer().Move(r, &dx, &dy);
+		return (!dy) ? true : false;
+	});
+	goomba->GetGravityHandler().SetOnStartFalling(
+	[]() {
+		std::cout << "start falling." << std::endl;
+	});
+	goomba->GetGravityHandler().SetOnStopFalling(
+	[]() {
+		std::cout << "stop falling." << std::endl;
+	});
+	sprite = goomba;
+}
+
+void Piranha::Init (void) {
+	Sprite* piranha_sprite  = new Sprite (
+		startx,
+		starty,
+		AnimationFilmHolder::Get().GetAnimationFilm("piran"),
+		"PIRANHA"
+	);
+	Sprite* piranha_collision = new Sprite (
+		startx - 8,
+		starty - 2,
+		AnimationFilmHolder::Get().GetAnimationFilm("piran"),
+		"PIRANHA_COLL"
+	);
+	piranha_collision->SetVisibility(false);
+	SpriteManager::GetSingleton().Add(piranha_collision);
+	piranha_sprite->SetHasDirectMotion(true);
+	piranha_sprite->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), piranha_sprite));
+	SpriteManager::GetSingleton().Add(piranha_sprite);
+
+	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("piran");
+	FrameRangeAnimation* animation = new FrameRangeAnimation("piran", 0, 9, INT_MAX, 0, -2, 1);
+	FrameRangeAnimator*	animator = new FrameRangeAnimator();
+	animator->SetOnAction(
+		[piranha_sprite](Animator* animator, const Animation& anim) {
+			FrameRange_Action(piranha_sprite, animator, (const FrameRangeAnimation&) anim);
+		}
+	);
+	sprite 	= piranha_sprite;
+	coll 		= piranha_collision;
+	piranha_sprite->SetAnimFilm(film);
+	SetAnimator(animator);
+	animator->Start(animation, std::time(nullptr));
+}
+
+void Coin::Init (void) {
+	Sprite* coin_sprite  = new Sprite (
+		startx,
+		starty,
+		AnimationFilmHolder::Get().GetAnimationFilm("coin"),
+		"COIN"
+	);
+
+	SpriteManager::GetSingleton().Add(coin_sprite);
+	coin_sprite->SetHasDirectMotion(true);
+	coin_sprite->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), coin_sprite));
+	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("coin");
+	FrameRangeAnimation* animation = new FrameRangeAnimation("piran", 0, 2, INT_MAX, 0, 0, 1);
+	FrameRangeAnimator*	animator = new FrameRangeAnimator();
+	animator->SetOnAction(
+		[coin_sprite](Animator* animator, const Animation& anim) {
+			FrameRange_Action(coin_sprite, animator, (const FrameRangeAnimation&) anim);
+		}
+	);
+	sprite = coin_sprite;
+	coin_sprite->SetAnimFilm(film);
+	SetAnimator(animator);
+	animator->Start(animation, std::time(nullptr));
 }
