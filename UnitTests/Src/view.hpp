@@ -14,7 +14,8 @@
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_color.h>
-
+#include <allegro5/allegro_audio.h>
+#include <allegro5/allegro_acodec.h>
 #define SHEET "../../ThirdParty/super_mario_sprite_sheet.png"
 
 typedef struct {
@@ -24,6 +25,7 @@ typedef struct {
 	ALLEGRO_DISPLAY* disp;
 	ALLEGRO_MONITOR_INFO* monitor;
 	ALLEGRO_EVENT event;
+	ALLEGRO_SAMPLE *sample;
 	bool done = false;
 	unsigned char key[ALLEGRO_KEY_MAX];
 }ALLEGRO;

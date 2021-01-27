@@ -18,6 +18,9 @@ void App::Initialize (void) {
 	must_init(al_init(), "allegro");
 	must_init(al_install_keyboard(), "keyboard");
 
+	al_install_audio();
+	al_init_acodec_addon();
+	
 	al.timer = al_create_timer(FPS);
 	must_init(al.timer, "timer");
 
@@ -35,6 +38,10 @@ void App::Initialize (void) {
 }
 
 void App::Load (void) {
+
+	al_reserve_samples(1);
+	al.sample = al_load_sample("mario.ogg");
+	
 	al_register_event_source(al.queue, al_get_keyboard_event_source());
 	al_register_event_source(al.queue, al_get_display_event_source(al.disp));
 	al_register_event_source(al.queue, al_get_timer_event_source(al.timer));
@@ -61,6 +68,7 @@ void App::Clear (void) {
 	al_destroy_display(al.disp);
 	al_destroy_timer(al.timer);
 	al_destroy_event_queue(al.queue);
+	al_destroy_sample(al.sample);
 }
 
 void InitGoomba () {

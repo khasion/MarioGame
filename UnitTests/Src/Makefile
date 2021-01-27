@@ -2,7 +2,7 @@ CC = g++
 CXXFLAGS = -std=c++14
 
 make:	main.o app.o view.o layer.o game.o anim.o entities.o
-	g++ main.o app.o view.o layer.o game.o anim.o entities.o -o game -std=c++14 -lallegro_font -lallegro_image -lallegro_primitives -lallegro_color -lallegro -std=c++14 -std=gnu++14
+	g++ main.o app.o view.o layer.o game.o anim.o entities.o -o game -std=c++14 -lallegro_font -lallegro_audio -lallegro_acodec -lallegro_image -lallegro_primitives -lallegro_color -lallegro -std=c++14 -std=gnu++14
 
 main.o: main.cpp app.hpp game.hpp anim.hpp layer.hpp view.hpp entities.hpp
 	$(CC) -c main.cpp -std=c++14
