@@ -3,7 +3,7 @@
 std::vector<std::string> messages;
 
 void Game::MainLoop () {
-	al_play_sample(al.sample,3,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
+	al_play_sample(al.sample,3,0,1,ALLEGRO_PLAYMODE_LOOP,NULL);
 	al_start_timer(al.timer);
 	Pause(std::time(nullptr));
 	messages.push_back("GIANNIS KASSIONIS, APOSTOLIS NIKOLAOU");
