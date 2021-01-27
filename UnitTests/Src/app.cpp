@@ -203,9 +203,12 @@ void InitCollisions (void) {
 				player->GetSprite(),
 				coin->GetSprite(),
 				[coin, str](Sprite* s1, Sprite* s2) {
-					player->AddCoin();
-					SpriteManager::GetSingleton().Remove(coin->GetSprite());
-					EntityManager::Get().Remove(str, coin);
+					if (!coin->IsDead()) {
+						player->AddCoin();
+						coin->SetDead(true);
+						SpriteManager::GetSingleton().Remove(coin->GetSprite());
+						EntityManager::Get().Remove(str, coin);
+					}
 				}
 			);
 		}
