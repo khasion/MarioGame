@@ -60,6 +60,28 @@ void Mario::Do (void) {
 	newanimator->Start(newanimation, std::time(nullptr));
 }
 
+void Mushroom::Do (void) {
+	std::cout<<("mushroom dooooooooo 1\n");
+	Sprite* mushroom = GetSprite();
+	int *dx = GetDx(), *dy = GetDy();
+	int tempdx = *dx;
+	mushroom->GetQuantizer().Move(mushroom->GetBox(), dx, dy);
+	if (*dx == 0) { *dx = tempdx * (-1);}
+	mushroom->Move(*dx, *dy);
+	if (GetAnimator()) { return;}
+	FrameRangeAnimator* newanimator = new FrameRangeAnimator();
+	newanimator->SetOnAction(
+		[mushroom](Animator* animator, const Animation& anim) {
+			FrameRange_Action(mushroom, animator, (const FrameRangeAnimation&) anim);
+		}
+	);
+	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("mushroom");
+	FrameRangeAnimation* newanimation = new FrameRangeAnimation("mushroom", 0, 2, INT_MAX, 0, 0, 1);
+	mushroom->SetAnimFilm(film);
+	SetAnimator(newanimator);
+	newanimator->Start(newanimation, std::time(nullptr));
+}
+
 void Goomba::Do (void) {
 	Sprite* goomba = GetSprite();
 	int *dx = GetDx(), *dy = GetDy();
@@ -239,6 +261,53 @@ void Coin::Init (void) {
 	SetAnimator(animator);
 	animator->Start(animation, std::time(nullptr));
 }
+
+void Mushroom::Init (void) {
+
+	Sprite* mushroom_sprite  = new Sprite (
+		startx,
+		starty,
+		AnimationFilmHolder::Get().GetAnimationFilm("mushroom"),
+		"MUSHROOM"
+	);
+	
+
+	mushroom_sprite->PrepareSpriteGravityHandler(tlayer->GetGridLayer(), mushroom_sprite);
+
+	mushroom_sprite->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), mushroom_sprite));
+	mushroom_sprite->GetGravityHandler().SetOnSolidGround(
+	[mushroom_sprite](const Rect& r) {
+		int dx = 0, dy = 1;
+
+		mushroom_sprite->GetQuantizer().Move(r, &dx, &dy);
+		return (!dy) ? true : false;
+	});
+	mushroom_sprite->GetGravityHandler().SetOnStartFalling(
+	[]() {
+		std::cout << "start falling." << std::endl;
+	});
+	mushroom_sprite->GetGravityHandler().SetOnStopFalling(
+	[]() {
+		std::cout << "stop falling." << std::endl;
+	});
+
+	SpriteManager::GetSingleton().Add(mushroom_sprite);
+
+	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("mushroom");
+	FrameRangeAnimation* animation = new FrameRangeAnimation("mushroom", 0, 2, INT_MAX, 0, 0, 1);
+	FrameRangeAnimator*	animator = new FrameRangeAnimator();
+	animator->SetOnAction(
+		[mushroom_sprite](Animator* animator, const Animation& anim) {
+			FrameRange_Action(mushroom_sprite, animator, (const FrameRangeAnimation&) anim);
+		}
+	);
+	sprite = mushroom_sprite;
+	mushroom_sprite->SetAnimFilm(film);
+	SetAnimator(animator);
+	animator->Start(animation, std::time(nullptr));
+}
+
+
 
 void Box::Init (void) {
 	Sprite* box_sprite  = new Sprite (

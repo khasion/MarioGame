@@ -122,6 +122,15 @@ public:
 		Entity (_x, _y, 0, 0, _l) {Init();};
 };
 
+class Mushroom : public Entity {
+private:
+public:
+	void Do (void) override;
+	void Do (Sprite*) override {};
+	void Init (void);
+	Mushroom (int _x, int _y, int _u, double _m, int _lives) :
+		Entity (_x, _y, _u, _m, _lives) {Init();};
+};
 
 class EntityManager {
 private:

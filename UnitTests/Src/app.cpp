@@ -1,7 +1,7 @@
 #include "app.hpp"
 using namespace app;
 
-Entity* enemy_1, *piranha;
+Entity* enemy_1, *piranha,*mushroom;;
 Mario* player;
 Coin** coins;
 double g = 0;
@@ -36,6 +36,24 @@ void App::Initialize (void) {
 
 	must_init(al_init_primitives_addon(), "primitives");
 }
+void InitMushroom () {
+	mushroom = new Mushroom(100, 430, 1, 3, 1);
+	mushroom->SetOnDamage (
+		[]() {
+			mushroom->SetLives(mushroom->GetLives()-1);
+			if (!mushroom->GetLives()) {
+				SpriteManager::GetSingleton().Remove(mushroom->GetSprite());
+				EntityManager::Get().Remove("goomba1", mushroom);
+				std::cout<<"mario eat mushroom\n";
+			}
+		}
+	);
+	mushroom->SetDx(-1);
+	EntityManager::Get().Add("ai", mushroom);
+
+
+}
+
 
 void App::Load (void) {
 
@@ -59,6 +77,7 @@ void App::Load (void) {
 	InitGoomba ();
 	InitPiranha ();
 	InitCoin ();
+	InitMushroom();
 	InitCollisions ();
 }
 

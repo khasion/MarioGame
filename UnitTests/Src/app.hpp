@@ -6,6 +6,7 @@
 extern Mario* player;
 extern Entity* piranha;
 extern Entity* enemy_1;
+extern Entity* musroom;
 extern Coin** coins;
 extern double g;
 
@@ -38,4 +39,5 @@ void InitPlayer ();
 void InitCoin ();
 void InitCollisions ();
 void InitEnemies ();
+void InitMushroom();
 #endif
