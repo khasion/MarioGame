@@ -103,7 +103,13 @@ void InitCoin () {
 
 void InitPiranha () {
 	piranha = new Piranha (57*16+8, 480-130, 1);
+	Coin* tele1 = new Coin(57*16+8, 480-138);
+	Coin* tele2 = new Coin(229*16-8, 19*16);
+	tele1->GetSprite()->SetVisibility(false);
+	tele2->GetSprite()->SetVisibility(false);
 	EntityManager::Get().Add("piran", piranha);
+	EntityManager::Get().Add("tele1", tele1);
+	EntityManager::Get().Add("tele2", tele2);
 }
 
 void InitPlayer () {
@@ -213,4 +219,26 @@ void InitCollisions (void) {
 			);
 		}
 	}
+	Coin* tele1 = (Coin*)EntityManager::Get().Get("tele1");
+	CollisionChecker::GetSingleton().Register (
+		player->GetSprite(),
+		tele1->GetSprite(),
+		[] (Sprite* s1, Sprite* s2) {
+			if (al.key[ALLEGRO_KEY_DOWN]) {
+				player->GetSprite()->SetPos(210*16, 14*16);
+				tlayer->SetViewWindow({210*16-320, 0, 640, 480});
+			}
+		}
+	);
+	Coin* tele2 = (Coin*)EntityManager::Get().Get("tele2");
+	CollisionChecker::GetSingleton().Register (
+		player->GetSprite(),
+		tele2->GetSprite(),
+		[] (Sprite* s1, Sprite* s2) {
+			if (al.key[ALLEGRO_KEY_RIGHT]) {
+				player->GetSprite()->SetPos(133*16, 24*16);
+				tlayer->SetViewWindow({133*16-320, 0, 640, 480});
+			}
+		}
+	);
 }

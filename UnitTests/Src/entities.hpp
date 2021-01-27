@@ -135,6 +135,7 @@ public:
 	void 	Add (std::string str, Entity* e) 	{ entityMap.insert(std::make_pair(str, e));}
 	void	Remove (std::string str, Entity* e)	{ entityMap.erase(str);}
 	auto	GetAll (void)	{ return entityMap;}
+	auto 	Get (std::string str) { return entityMap[str];}
 };
 
 #endif
