@@ -74,6 +74,8 @@ public:
 	void AddCoin (void)		{ coins++;}
 	void SetHit (bool b)	{ isHit = b;}
 	bool IsHit (void)		{ return isHit;}
+	void SetSuper (bool b)	{ isSuper = b;}
+	bool IsSuper (void)		{ return isSuper;}
 	Mario (int _x, int _y, int _u, double _m, int _lives) :
 		Entity (_x, _y, _u, _m, _lives) {Init();};
 };
@@ -132,6 +134,25 @@ public:
 		Entity (_x, _y, _u, _m, _lives) {Init();};
 };
 
+class OneUp : public Entity {
+private:
+public:
+	void Do (void) override;
+	void Do (Sprite*) override {};
+	void Init (void);
+	OneUp (int _x, int _y, int _u, double _m, int _lives) :
+		Entity (_x, _y, _u, _m, _lives) {Init();};
+};
+
+class Star : public Entity {
+private:
+public:
+	void Do (void) override;
+	void Do (Sprite*) override {};
+	void Init (void);
+	Star (int _x, int _y, int _u, double _m, int _lives) :
+		Entity (_x, _y, _u, _m, _lives) {Init();};
+};
 class EntityManager {
 private:
 	std::map<std::string, Entity*> entityMap;

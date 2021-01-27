@@ -36,8 +36,8 @@ namespace app {
 void InitGoomba ();
 void InitPiranha ();
 void InitPlayer ();
-void InitCoin ();
+void InitCoinAndBoxes ();
 void InitCollisions ();
 void InitEnemies ();
-void InitMushroom();
+void InitPowerUps ();
 #endif

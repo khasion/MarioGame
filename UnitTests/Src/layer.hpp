@@ -87,6 +87,18 @@ public:
 
 extern std::vector<std::pair<int, int>> coins_xy;
 extern std::vector<std::pair<int, int>> boxes_xy;
+extern std::vector<std::pair<int, int>> mush_xy;
+extern std::vector<std::pair<int, int>> star_xy;
+extern std::vector<std::pair<int, int>> up_xy;
+
+#define COIN_INDEX 	26
+#define BOX_INDEX 	0
+#define MUSH_INDEX 	242
+#define STAR_INDEX	293
+#define UP_INDEX		243
+
+#define EMPTY_INV_INDEX 239
+#define SOLID_INV_INDEX 240
 
 class TileLayer {
 private:

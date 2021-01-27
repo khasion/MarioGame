@@ -3,6 +3,9 @@
 TileLayer* tlayer;
 std::vector<std::pair<int, int>> coins_xy;
 std::vector<std::pair<int, int>> boxes_xy;
+std::vector<std::pair<int, int>> mush_xy;
+std::vector<std::pair<int, int>> star_xy;
+std::vector<std::pair<int, int>> up_xy;
 
 void GridLayer::FilterGridMotionDown (const Rect& r, int* dy) {
 	auto y2 = r.y + r.h + 1;
@@ -112,6 +115,27 @@ GridLayer::GridLayer (unsigned rows, unsigned cols) {
 	Allocate();
 }
 
+Index IsEntity (Index index, int x, int y) {
+	switch (index) {
+		case COIN_INDEX:
+			coins_xy.push_back(std::make_pair(MUL_TILE_WIDTH(x), MUL_TILE_HEIGHT(y)));
+			return EMPTY_INV_INDEX;
+		case BOX_INDEX:
+			boxes_xy.push_back(std::make_pair(MUL_TILE_WIDTH(x), MUL_TILE_HEIGHT(y)));
+			return SOLID_INV_INDEX;
+		case MUSH_INDEX:
+			mush_xy.push_back(std::make_pair(MUL_TILE_WIDTH(x), MUL_TILE_HEIGHT(y)));
+			return EMPTY_INV_INDEX;
+		case STAR_INDEX:
+			star_xy.push_back(std::make_pair(MUL_TILE_WIDTH(x), MUL_TILE_HEIGHT(y)));
+			return EMPTY_INV_INDEX;
+		case UP_INDEX:
+			up_xy.push_back(std::make_pair(MUL_TILE_WIDTH(x), MUL_TILE_HEIGHT(y)));
+			return EMPTY_INV_INDEX;
+	}
+	return index;
+}
+
 bool TileLayer::ReadText (std::string path) {
 	std::ifstream file(path);
 	int i = 0;
@@ -126,15 +150,7 @@ bool TileLayer::ReadText (std::string path) {
 		int j = 0;
 		for (auto it = input.cbegin(); it!=input.cend(); ++it) {
 			if (*it == ',') {
-				Index index = std::stoi(temp);
-				if (index == 26) {
-					coins_xy.push_back(std::make_pair(MUL_TILE_WIDTH(j), MUL_TILE_HEIGHT(i)));
-					index = 239;
-				}
-				if (index == 0) {
-					boxes_xy.push_back(std::make_pair(MUL_TILE_WIDTH(j), MUL_TILE_HEIGHT(i)));
-					index = 240;
-				}
+				Index index = IsEntity(std::stoi(temp), j, i);
 				SetTile(j++, i, index);
 				temp.clear();
 			}

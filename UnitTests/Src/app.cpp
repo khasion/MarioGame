@@ -36,24 +36,6 @@ void App::Initialize (void) {
 
 	must_init(al_init_primitives_addon(), "primitives");
 }
-void InitMushroom () {
-	mushroom = new Mushroom(100, 430, 1, 3, 1);
-	mushroom->SetOnDamage (
-		[]() {
-			mushroom->SetLives(mushroom->GetLives()-1);
-			if (!mushroom->GetLives()) {
-				SpriteManager::GetSingleton().Remove(mushroom->GetSprite());
-				EntityManager::Get().Remove("goomba1", mushroom);
-				std::cout<<"mario eat mushroom\n";
-			}
-		}
-	);
-	mushroom->SetDx(-1);
-	EntityManager::Get().Add("ai", mushroom);
-
-
-}
-
 
 void App::Load (void) {
 
@@ -76,8 +58,8 @@ void App::Load (void) {
 	InitPlayer ();
 	InitGoomba ();
 	InitPiranha ();
-	InitCoin ();
-	InitMushroom();
+	InitCoinAndBoxes ();
+	InitPowerUps();
 	InitCollisions ();
 }
 
@@ -88,6 +70,27 @@ void App::Clear (void) {
 	al_destroy_timer(al.timer);
 	al_destroy_event_queue(al.queue);
 	al_destroy_sample(al.sample);
+}
+
+void InitPowerUps () {
+	int i = 0;
+	for (auto it = mush_xy.begin(); it != mush_xy.end(); ++it) {
+		int x = (*it).first, y = (*it).second;
+		EntityManager::Get().Add("mush"+std::to_string(i), new Mushroom(x, y-2, 1, 3, 1));
+		i++;
+	}
+	i = 0;
+	for (auto it = up_xy.begin(); it != up_xy.end(); ++it) {
+		int x = (*it).first, y = (*it).second;
+		EntityManager::Get().Add("oneup"+std::to_string(i), new OneUp(x, y-2, 1, 3, 1));
+		i++;
+	}
+	i = 0;
+	for (auto it = star_xy.begin(); it != star_xy.end(); ++it) {
+		int x = (*it).first, y = (*it).second;
+		EntityManager::Get().Add("star"+std::to_string(i), new Star(x, y-2, 1, 3, 1));
+		i++;
+	}
 }
 
 void InitGoomba () {
@@ -105,7 +108,7 @@ void InitGoomba () {
 	EntityManager::Get().Add("ai", enemy_1);
 }
 
-void InitCoin () {
+void InitCoinAndBoxes () {
 	int i = 0;
 	for (auto it = coins_xy.begin(); it != coins_xy.end(); ++it) {
 		int x = (*it).first, y = (*it).second;
@@ -202,6 +205,9 @@ void InitCollisions (void) {
 						std::vector<ScrollEntry> entry;
 						entry.push_back({0, -5, 1}); entry.push_back({0, 5, 1});
 						entry.push_back({0, 5, 1});
+						for (int i = 0; i < 30; i++) {
+							entry.push_back({0, 0, 1});
+						}
 						ScrollAnimation* s = new ScrollAnimation (box->GetSprite()->GetTypeId(), entry);
 						ScrollAnimator* animator = new ScrollAnimator();
 						animator->SetOnAction(

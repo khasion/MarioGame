@@ -46,6 +46,7 @@ void Mario::Do (void) {
 			if (isFalling) { curr = "mario_jumpingl";}
 		}
 	}
+	if (IsSuper()) { curr = "super_"+curr;}
 	if (curr.compare(prev) == 0) { return;}
 	FrameRangeAnimator* newanimator = new FrameRangeAnimator();
 	newanimator->SetOnAction(
@@ -61,7 +62,6 @@ void Mario::Do (void) {
 }
 
 void Mushroom::Do (void) {
-	std::cout<<("mushroom dooooooooo 1\n");
 	Sprite* mushroom = GetSprite();
 	int *dx = GetDx(), *dy = GetDy();
 	int tempdx = *dx;
@@ -78,6 +78,48 @@ void Mushroom::Do (void) {
 	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("mushroom");
 	FrameRangeAnimation* newanimation = new FrameRangeAnimation("mushroom", 0, 2, INT_MAX, 0, 0, 1);
 	mushroom->SetAnimFilm(film);
+	SetAnimator(newanimator);
+	newanimator->Start(newanimation, std::time(nullptr));
+}
+
+void OneUp::Do (void) {
+	Sprite* one = GetSprite();
+	int *dx = GetDx(), *dy = GetDy();
+	int tempdx = *dx;
+	one->GetQuantizer().Move(one->GetBox(), dx, dy);
+	if (*dx == 0) { *dx = tempdx * (-1);}
+	one->Move(*dx, *dy);
+	if (GetAnimator()) { return;}
+	FrameRangeAnimator* newanimator = new FrameRangeAnimator();
+	newanimator->SetOnAction(
+		[one](Animator* animator, const Animation& anim) {
+			FrameRange_Action(one, animator, (const FrameRangeAnimation&) anim);
+		}
+	);
+	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("1up");
+	FrameRangeAnimation* newanimation = new FrameRangeAnimation("1up", 0, 0, INT_MAX, 0, 0, 1);
+	one->SetAnimFilm(film);
+	SetAnimator(newanimator);
+	newanimator->Start(newanimation, std::time(nullptr));
+}
+
+void Star::Do (void) {
+	Sprite* star = GetSprite();
+	int *dx = GetDx(), *dy = GetDy();
+	int tempdx = *dx;
+	star->GetQuantizer().Move(star->GetBox(), dx, dy);
+	if (*dx == 0) { *dx = tempdx * (-1);}
+	star->Move(*dx, *dy);
+	if (GetAnimator()) { return;}
+	FrameRangeAnimator* newanimator = new FrameRangeAnimator();
+	newanimator->SetOnAction(
+		[star](Animator* animator, const Animation& anim) {
+			FrameRange_Action(star, animator, (const FrameRangeAnimation&) anim);
+		}
+	);
+	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("star");
+	FrameRangeAnimation* newanimation = new FrameRangeAnimation("star", 0, 4, INT_MAX, 0, 0, 1);
+	star->SetAnimFilm(film);
 	SetAnimator(newanimator);
 	newanimator->Start(newanimation, std::time(nullptr));
 }
@@ -263,51 +305,209 @@ void Coin::Init (void) {
 }
 
 void Mushroom::Init (void) {
-
-	Sprite* mushroom_sprite  = new Sprite (
+	Sprite* mush_sprite  = new Sprite (
 		startx,
 		starty,
 		AnimationFilmHolder::Get().GetAnimationFilm("mushroom"),
 		"MUSHROOM"
 	);
-	
+	mush_sprite->SetVisibility(false);
+	mush_sprite->PrepareSpriteGravityHandler(tlayer->GetGridLayer(), mush_sprite);
 
-	mushroom_sprite->PrepareSpriteGravityHandler(tlayer->GetGridLayer(), mushroom_sprite);
-
-	mushroom_sprite->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), mushroom_sprite));
-	mushroom_sprite->GetGravityHandler().SetOnSolidGround(
-	[mushroom_sprite](const Rect& r) {
+	mush_sprite->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), mush_sprite));
+	mush_sprite->GetGravityHandler().SetOnSolidGround(
+	[mush_sprite](const Rect& r) {
 		int dx = 0, dy = 1;
-
-		mushroom_sprite->GetQuantizer().Move(r, &dx, &dy);
+		mush_sprite->GetQuantizer().Move(r, &dx, &dy);
 		return (!dy) ? true : false;
 	});
-	mushroom_sprite->GetGravityHandler().SetOnStartFalling(
+	mush_sprite->GetGravityHandler().SetOnStartFalling(
 	[]() {
 		std::cout << "start falling." << std::endl;
 	});
-	mushroom_sprite->GetGravityHandler().SetOnStopFalling(
+	mush_sprite->GetGravityHandler().SetOnStopFalling(
 	[]() {
 		std::cout << "stop falling." << std::endl;
 	});
 
-	SpriteManager::GetSingleton().Add(mushroom_sprite);
+	SpriteManager::GetSingleton().Add(mush_sprite);
 
 	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("mushroom");
-	FrameRangeAnimation* animation = new FrameRangeAnimation("mushroom", 0, 2, INT_MAX, 0, 0, 1);
+	FrameRangeAnimation* animation = new FrameRangeAnimation("mushroom", 0, 0, INT_MAX, 0, 0, 1);
 	FrameRangeAnimator*	animator = new FrameRangeAnimator();
 	animator->SetOnAction(
-		[mushroom_sprite](Animator* animator, const Animation& anim) {
-			FrameRange_Action(mushroom_sprite, animator, (const FrameRangeAnimation&) anim);
+		[mush_sprite](Animator* animator, const Animation& anim) {
+			FrameRange_Action(mush_sprite, animator, (const FrameRangeAnimation&) anim);
 		}
 	);
-	sprite = mushroom_sprite;
-	mushroom_sprite->SetAnimFilm(film);
+	sprite = mush_sprite;
+	mush_sprite->SetAnimFilm(film);
 	SetAnimator(animator);
 	animator->Start(animation, std::time(nullptr));
+	
+	auto list = EntityManager::Get().GetAll();
+	Mushroom* mush = this;
+	for (auto it = list.begin(); it != list.end(); ++it) {
+		if ((*it).first.substr(0, 3).compare("box") != 0) { continue;}
+		Box* box = (Box*)(*it).second;
+		CollisionChecker::GetSingleton().Register(
+			GetSprite(),
+			box->GetSprite(),
+			[mush] (Sprite* s1, Sprite* s2) {
+				if (*mush->GetDx() == 0) { 
+					mush->GetSprite()->SetVisibility(true);
+					mush->SetDx(1);
+				}
+				else { mush->SetDx(*mush->GetDx()*(-1));}
+			}
+		);
+	}
+	Mario* mario = (Mario*)EntityManager::Get().Get("player");
+	CollisionChecker::GetSingleton().Register(
+		GetSprite(),
+		mario->GetSprite(),
+		[mario, mush] (Sprite* s1, Sprite * s2) {
+			if (!mush->IsDead()) {
+				mush->SetDead(true);
+				mario->SetSuper(true);
+				mario->SetDy(-12);
+				SpriteManager::GetSingleton().Remove(mush->GetSprite());
+			}
+		}
+	);
 }
 
+void OneUp::Init () {
+	Sprite* one_sprite  = new Sprite (
+		startx,
+		starty,
+		AnimationFilmHolder::Get().GetAnimationFilm("1up"),
+		"1UP"
+	);
+	one_sprite->SetVisibility(false);
+	one_sprite->PrepareSpriteGravityHandler(tlayer->GetGridLayer(), one_sprite);
 
+	one_sprite->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), one_sprite));
+	one_sprite->GetGravityHandler().SetOnSolidGround(
+	[one_sprite](const Rect& r) {
+		int dx = 0, dy = 1;
+		one_sprite->GetQuantizer().Move(r, &dx, &dy);
+		return (!dy) ? true : false;
+	});
+	one_sprite->GetGravityHandler().SetOnStartFalling(
+	[]() {
+		std::cout << "start falling." << std::endl;
+	});
+	one_sprite->GetGravityHandler().SetOnStopFalling(
+	[]() {
+		std::cout << "stop falling." << std::endl;
+	});
+
+	SpriteManager::GetSingleton().Add(one_sprite);
+
+	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("1up");
+	FrameRangeAnimation* animation = new FrameRangeAnimation("1up", 0, 0, INT_MAX, 0, 0, 1);
+	FrameRangeAnimator*	animator = new FrameRangeAnimator();
+	animator->SetOnAction(
+		[one_sprite](Animator* animator, const Animation& anim) {
+			FrameRange_Action(one_sprite, animator, (const FrameRangeAnimation&) anim);
+		}
+	);
+	sprite = one_sprite;
+	one_sprite->SetAnimFilm(film);
+	SetAnimator(animator);
+	animator->Start(animation, std::time(nullptr));
+	
+	auto list = EntityManager::Get().GetAll();
+	OneUp* one = this;
+	for (auto it = list.begin(); it != list.end(); ++it) {
+		if ((*it).first.substr(0, 3).compare("box") != 0) { continue;}
+		Box* box = (Box*)(*it).second;
+		CollisionChecker::GetSingleton().Register(
+			GetSprite(),
+			box->GetSprite(),
+			[one] (Sprite* s1, Sprite* s2) {
+				if (*one->GetDx() == 0) { 
+					one->GetSprite()->SetVisibility(true);
+					one->SetDx(1);
+				}
+				else { one->SetDx(*one->GetDx()*(-1));}
+			}
+		);
+	}
+	Mario* mario = (Mario*)EntityManager::Get().Get("player");
+	CollisionChecker::GetSingleton().Register(
+		GetSprite(),
+		mario->GetSprite(),
+		[mario, one] (Sprite* s1, Sprite * s2) {
+			if (!one->IsDead()) {
+				one->SetDead(true);
+				mario->SetLives(mario->GetLives()+1);
+				SpriteManager::GetSingleton().Remove(one->GetSprite());
+			}
+		}
+	);
+}
+
+void Star::Init (void) {
+	Sprite* star_sprite  = new Sprite (
+		startx,
+		starty,
+		AnimationFilmHolder::Get().GetAnimationFilm("star"),
+		"STAR"
+	);
+	star_sprite->SetVisibility(false);
+	star_sprite->PrepareSpriteGravityHandler(tlayer->GetGridLayer(), star_sprite);
+
+	star_sprite->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), star_sprite));
+	star_sprite->GetGravityHandler().SetOnSolidGround(
+	[star_sprite](const Rect& r) {
+		int dx = 0, dy = 1;
+		star_sprite->GetQuantizer().Move(r, &dx, &dy);
+		return (!dy) ? true : false;
+	});
+	star_sprite->GetGravityHandler().SetOnStartFalling(
+	[]() {
+		std::cout << "start falling." << std::endl;
+	});
+	star_sprite->GetGravityHandler().SetOnStopFalling(
+	[]() {
+		std::cout << "stop falling." << std::endl;
+	});
+
+	SpriteManager::GetSingleton().Add(star_sprite);
+
+	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("star");
+	FrameRangeAnimation* animation = new FrameRangeAnimation("star", 0, 4, INT_MAX, 0, 0, 1);
+	FrameRangeAnimator*	animator = new FrameRangeAnimator();
+	animator->SetOnAction(
+		[star_sprite](Animator* animator, const Animation& anim) {
+			FrameRange_Action(star_sprite, animator, (const FrameRangeAnimation&) anim);
+		}
+	);
+	sprite = star_sprite;
+	star_sprite->SetAnimFilm(film);
+	SetAnimator(animator);
+	animator->Start(animation, std::time(nullptr));
+	
+	auto list = EntityManager::Get().GetAll();
+	Star* star = this;
+	for (auto it = list.begin(); it != list.end(); ++it) {
+		if ((*it).first.substr(0, 3).compare("box") != 0) { continue;}
+		Box* box = (Box*)(*it).second;
+		CollisionChecker::GetSingleton().Register(
+			GetSprite(),
+			box->GetSprite(),
+			[star] (Sprite* s1, Sprite* s2) {
+				if (*star->GetDx() == 0) { 
+					star->GetSprite()->SetVisibility(true);
+					star->SetDx(1);
+				}
+				else { star->SetDx(*star->GetDx()*(-1));}
+			}
+		);
+	}
+}
 
 void Box::Init (void) {
 	Sprite* box_sprite  = new Sprite (

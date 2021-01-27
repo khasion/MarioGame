@@ -37,6 +37,10 @@ void gui (void) {
 	al_map_rgb(255, 255, 255), 2, 2, 0,
 	("coins: " + std::to_string(player->GetCoins())).c_str()
 	);
+	al_draw_text(al.font,
+	al_map_rgb(255, 255, 255), 315, 2, 0,
+	("lives: " + std::to_string(player->GetLives())).c_str()
+	);
 }
 
 void render (void) {
