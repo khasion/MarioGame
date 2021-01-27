@@ -69,7 +69,9 @@ public:
 	void Do (void) override;
 	void Do (Sprite*) override {};
 	void Init (void);
-	void SetCoins (int _c)	{coins = _c;};
+	int  GetCoins (void)		{ return coins;}
+	void SetCoins (int _c)	{ coins = _c;};
+	void AddCoin (void)		{ coins++;}
 	void SetHit (bool b)	{ isHit = b;}
 	bool IsHit (void)		{ return isHit;}
 	Mario (int _x, int _y, int _u, double _m, int _lives) :
@@ -109,10 +111,13 @@ public:
 
 class Box : public Entity {
 private:
+	bool isHit = false;
 public:
 	void Do (void) override;
 	void Do (Sprite*) override {};
 	void Init (void);
+	bool IsHit (void) { return isHit;}
+	void SetHit (bool b) { isHit = b;}
 	Box (int _x, int _y, int _l) :
 		Entity (_x, _y, 0, 0, _l) {Init();};
 };

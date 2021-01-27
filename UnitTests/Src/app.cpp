@@ -96,7 +96,7 @@ void InitCoin () {
 	i = 0;
 	for (auto it = boxes_xy.begin(); it != boxes_xy.end(); ++it) {
 		int x = (*it).first, y = (*it).second;
-		EntityManager::Get().Add("box"+std::to_string(i), new Box(x, y, 10));
+		EntityManager::Get().Add("box"+std::to_string(i), new Box(x, y+1, 10));
 		i++;
 	}
 }
@@ -162,5 +162,52 @@ void InitCollisions (void) {
 			player->Damage();
 		}
 	);
-
+	auto list = EntityManager::Get().GetAll();
+	for (auto it = list.begin(); it != list.end(); ++it) {
+		if ((*it).first.substr(0, 3).compare("box") == 0) {
+			Box* box = (Box*)(*it).second;
+			CollisionChecker::GetSingleton().Register (
+				player->GetSprite(),
+				box->GetSprite(),
+				[box](Sprite* s1, Sprite* s2) {
+					if (player->GetSprite()->GetGravityHandler().IsFalling()
+						&& !box->IsHit()) {
+						box->SetHit(true);
+						player->AddCoin();
+						std::vector<ScrollEntry> entry;
+						entry.push_back({0, -5, 1}); entry.push_back({0, 5, 1});
+						entry.push_back({0, 5, 1});
+						ScrollAnimation* s = new ScrollAnimation (box->GetSprite()->GetTypeId(), entry);
+						ScrollAnimator* animator = new ScrollAnimator();
+						animator->SetOnAction(
+							[box](Animator* animator, const Animation& anim) {
+								Sprite_ScrollAction(box->GetSprite(), (ScrollAnimator*) animator, &((const ScrollAnimation&) anim));
+							}
+						);
+						animator->SetOnFinish(
+							[box](Animator* a) {
+								box->SetHit(false);
+							}
+						);
+						animator->Start(s, std::time(nullptr));
+					}
+				}
+			);
+		}
+	}
+	for (auto it = list.begin(); it != list.end(); ++it) {
+		if ((*it).first.substr(0, 4).compare("coin") == 0) {
+			Coin* coin = (Coin*) (*it).second;
+			std::string str = (*it).first;
+			CollisionChecker::GetSingleton().Register (
+				player->GetSprite(),
+				coin->GetSprite(),
+				[coin, str](Sprite* s1, Sprite* s2) {
+					player->AddCoin();
+					SpriteManager::GetSingleton().Remove(coin->GetSprite());
+					EntityManager::Get().Remove(str, coin);
+				}
+			);
+		}
+	}
 }

@@ -32,6 +32,13 @@ int main()
 	return 0;
 }
 
+void gui (void) {
+	al_draw_text(al.font,
+	al_map_rgb(255, 255, 255), 2, 2, 0,
+	("coins: " + std::to_string(player->GetCoins())).c_str()
+	);
+}
+
 void render (void) {
 	if (al_is_event_queue_empty(al.queue)) {
 		switch (gaem->GetState()) {
@@ -40,6 +47,7 @@ void render (void) {
 				break;
 			case PLAY:
 				tlayer->Display(al_get_target_bitmap(), Rect {0, 0, 0, 0});
+				gui();
 				break;
 			case END:
 				break;
