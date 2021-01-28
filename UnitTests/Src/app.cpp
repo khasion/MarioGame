@@ -160,6 +160,7 @@ void InitPlayer () {
 	player = new Mario(320, 430, 2, 1, 2);
 	player->SetOnDamage (
 		[]() {
+			if (player->IsHit()) { return;}
 			player->SetHit(true);
 			std::vector<ScrollEntry> entry;
 			std::string str = player->GetSprite()->GetAnimFilm()->GetId();
@@ -179,23 +180,19 @@ void InitPlayer () {
 			);
 			scroll_animator->SetOnFinish(
 				[] (Animator* a) {
+					player->SetHit(false);
 					if(player->IsSuper()){
 						player->SetSuper(false);
 						al_play_sample(al.pipe_sample,3,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
-
 					}
 					else
 					{
-						player->SetHit(false);
 						player->SetLives(player->GetLives()-1);
-						al_play_sample(al.die_sample,3,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
-						if(player->GetLives() <= 0) {
+						if(player->GetLives() < 0) {
+							al_play_sample(al.die_sample,3,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
 							al_stop_sample(&al.id);
 							al_play_sample(al.gameover_sample,3,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
 							player->SetDead(true);
-							
-
-							
 						}
 					}
 				}
@@ -212,13 +209,13 @@ void InitKoopas () {
 	int i = 0;
 	for (auto it = koopa_xy.begin(); it != koopa_xy.end(); ++it) {
 		int x = (*it).first, y = (*it).second;
-		EntityManager::Get().Add("koopas"+std::to_string(i), new Koopa(x, y-8, 2, 2, 1));
+		EntityManager::Get().Add("koopas"+std::to_string(i), new Koopa(x, y-32, 2, 2, 1, false));
 		i++;
 	}
 	i = 0;
 	for (auto it = redkoopa_xy.begin(); it != redkoopa_xy.end(); ++it) {
 		int x = (*it).first, y = (*it).second;
-		EntityManager::Get().Add("redkoopas"+std::to_string(i), new RedKoopa(x, y-8, 2, 2, 1));
+		EntityManager::Get().Add("redkoopas"+std::to_string(i), new Koopa(x, y-32, 2, 2, 1, true));
 		i++;
 	}
 }
@@ -232,6 +229,7 @@ void InitCollisions (void) {
 			|| enemy_1->GetLives() <= 0) { return;}
 			if (s1->GetGravityHandler().IsFalling()) {
 				enemy_1->Damage();
+				player->SetDy(-16);
 			}
 			else { player->Damage();}
 		});

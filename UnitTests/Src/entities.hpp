@@ -10,7 +10,7 @@ protected:
 	Animator*	animator = nullptr;
 	OnDamage		onDamage;
 	double		mi = 0, m = 0;
-	double		g = 0.7;
+	double		g = 0.3;
 	int			dx = 0, dy = 0, u = 0;
 	int			startx = 0, starty = 0;
 	int 			lives = 1;
@@ -156,22 +156,18 @@ public:
 
 class Koopa : public Entity {
 private:
+	bool isRed = false;
+	bool isStunned = false;
 public:
 	void Do (void) override;
 	void Do (Sprite*) override {};
 	void Init (void);
-	Koopa (int _x, int _y, int _u, double _m, int _lives) :
-		Entity (_x, _y, _u, _m, _lives) {Init();};
-};
-
-class RedKoopa : public Entity {
-private:
-public:
-	void Do (void) override;
-	void Do (Sprite*) override {};
-	void Init (void);
-	RedKoopa (int _x, int _y, int _u, double _m, int _lives) :
-		Entity (_x, _y, _u, _m, _lives) {Init();};
+	bool IsRed (void) { return isRed;}
+	void SetRed (bool b) { isRed = b;}
+	bool IsStunned (void) { return isStunned;}
+	void SetStunned (bool b) { isStunned = b;}
+	Koopa (int _x, int _y, int _u, double _m, int _lives, bool red) :
+		Entity (_x, _y, _u, _m, _lives), isRed(red) {Init();};
 };
 
 class EntityManager {

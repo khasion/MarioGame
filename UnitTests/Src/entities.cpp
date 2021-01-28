@@ -146,11 +146,44 @@ void Goomba::Do (void) {
 }
 
 void Koopa::Do (void) {
+	Sprite* koopa_sprite = GetSprite();
+	int *dx = GetDx(), *dy = GetDy();
+	int tempdx = *dx;
+	koopa_sprite->GetQuantizer().Move(koopa_sprite->GetBox(), dx, dy);
+	if (*dx == 0) { tempdx = tempdx*(-1);}
+	*dx = tempdx;
+	koopa_sprite->Move(*dx, *dy);
+	std::string curr;
+	std::string prev = koopa_sprite->GetAnimFilm()->GetId();
+	int d = 1;
+	int start = 0, end = 1;
+	if (*dx >= 0) 		{ curr = "koopar";}
+	if (*dx < 0) 		{ curr = "koopal";}
+	if (IsRed()) 		{ curr = "red" + curr;}
+	if (IsStunned())	{ curr = "stunned_" + curr; end = 0; d = 2;}
+	if (*dx == 0) 		{ end = 1; d = 2;}
 
-}
-
-void RedKoopa::Do (void) {
-
+	if (curr.compare(prev) == 0) { return;}
+	FrameRangeAnimator* newanimator = new FrameRangeAnimator();
+	newanimator->SetOnAction(
+		[koopa_sprite](Animator* animator, const Animation& anim) {
+			FrameRange_Action(koopa_sprite, animator, (const FrameRangeAnimation&) anim);
+		}
+	);
+	if (*dx == 0 && IsStunned()) {
+		Koopa* koopa = this;
+		newanimator->SetOnFinish(
+			[koopa](Animator* animator) {
+				koopa->SetDy(-8);
+				koopa->SetStunned(false);
+			}
+		);
+	}
+	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm(curr);
+	FrameRangeAnimation* newanimation = new FrameRangeAnimation(curr, start, end, INT_MAX, 0, 0, d);
+	koopa_sprite->SetAnimFilm(film);
+	SetAnimator(newanimator);
+	newanimator->Start(newanimation, std::time(nullptr));
 }
 
 void Piranha::Do (Sprite* mario) {
@@ -255,24 +288,33 @@ void Goomba::Init (void) {
 }
 
 void Koopa::Init () {
+	std::string str = "koopal";
+	if (IsRed()) { str = "red" + str;}
 	Sprite* koopa_sprite = new Sprite(
 		startx,
 		starty,
-		AnimationFilmHolder::Get().GetAnimationFilm("koopal"),
+		AnimationFilmHolder::Get().GetAnimationFilm(str),
 		"KOOPA"
 	);
 	SpriteManager::GetSingleton().Add(koopa_sprite);
 
 	koopa_sprite->PrepareSpriteGravityHandler(tlayer->GetGridLayer(), koopa_sprite);
 	koopa_sprite->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), koopa_sprite));
+	Koopa* koopa = this;
 	koopa_sprite->GetGravityHandler().SetOnSolidGround(
-	[koopa_sprite](const Rect& r) {
+	[koopa_sprite, koopa](const Rect& r) {
 		int dx = 0, dy = 1;
+		if (*koopa->GetDx() > 0) { dx = 12;}
+		else { dx = -12;}
 		koopa_sprite->GetQuantizer().Move(r, &dx, &dy);
 		return (!dy) ? true : false;
 	});
 	koopa_sprite->GetGravityHandler().SetOnStartFalling(
-	[]() {
+	[koopa]() {
+		if (!koopa->IsStunned()) {
+			koopa->SetDy(-5);
+			koopa->SetDx(*koopa->GetDx()*(-1));
+		}
 		std::cout << "start falling." << std::endl;
 	});
 	koopa_sprite->GetGravityHandler().SetOnStopFalling(
@@ -280,8 +322,8 @@ void Koopa::Init () {
 		std::cout << "stop falling." << std::endl;
 	});
 	sprite = koopa_sprite;
-	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("koopal");
-	FrameRangeAnimation* animation = new FrameRangeAnimation("koopal", 0, 1, INT_MAX, 0, 0, 1);
+	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm(str);
+	FrameRangeAnimation* animation = new FrameRangeAnimation(str, 0, 1, INT_MAX, 0, 0, 1);
 	FrameRangeAnimator*	animator = new FrameRangeAnimator();
 	animator->SetOnAction(
 		[koopa_sprite](Animator* animator, const Animation& anim) {
@@ -291,45 +333,43 @@ void Koopa::Init () {
 	koopa_sprite->SetAnimFilm(film);
 	SetAnimator(animator);
 	animator->Start(animation, std::time(nullptr));
-}
-
-void RedKoopa::Init (void) {
-	Sprite* redkoopa_sprite = new Sprite(
-		startx,
-		starty,
-		AnimationFilmHolder::Get().GetAnimationFilm("redkoopal"),
-		"REDKOOPA"
-	);
-	SpriteManager::GetSingleton().Add(redkoopa_sprite);
-
-	redkoopa_sprite->PrepareSpriteGravityHandler(tlayer->GetGridLayer(), redkoopa_sprite);
-	redkoopa_sprite->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), redkoopa_sprite));
-	redkoopa_sprite->GetGravityHandler().SetOnSolidGround(
-	[redkoopa_sprite](const Rect& r) {
-		int dx = 0, dy = 1;
-		redkoopa_sprite->GetQuantizer().Move(r, &dx, &dy);
-		return (!dy) ? true : false;
-	});
-	redkoopa_sprite->GetGravityHandler().SetOnStartFalling(
-	[]() {
-		std::cout << "start falling." << std::endl;
-	});
-	redkoopa_sprite->GetGravityHandler().SetOnStopFalling(
-	[]() {
-		std::cout << "stop falling." << std::endl;
-	});
-	sprite = redkoopa_sprite;
-	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("redkoopal");
-	FrameRangeAnimation* animation = new FrameRangeAnimation("redkoopal", 0, 1, INT_MAX, 0, 0, 1);
-	FrameRangeAnimator*	animator = new FrameRangeAnimator();
-	animator->SetOnAction(
-		[redkoopa_sprite](Animator* animator, const Animation& anim) {
-			FrameRange_Action(redkoopa_sprite, animator, (const FrameRangeAnimation&) anim);
+	SetDx(-1);
+	Mario* mario = (Mario*)EntityManager::Get().Get("player");
+	CollisionChecker::GetSingleton().Register(
+		GetSprite(),
+		mario->GetSprite(),
+		[mario, koopa] (Sprite* s1, Sprite * s2) {
+			Sprite* msprite = mario->GetSprite();
+			if (koopa->IsStunned()) {
+				if (!msprite->GetGravityHandler().IsFalling()) {
+					mario->Damage();
+				}
+				if (mario->GetSprite()->GetX() > koopa->GetSprite()->GetX()) {
+					koopa->SetDx(-1);
+					mario->ResetMass();
+					mario->SetDy(-16);
+				}
+				else if (mario->GetSprite()->GetX() < koopa->GetSprite()->GetX()){
+					koopa->SetDx(1);
+					mario->ResetMass();
+					mario->SetDy(-16);
+				}
+				else {
+					koopa->SetDx(0);
+					mario->ResetMass();
+					mario->SetDy(-16);
+				}
+			}
+			else {
+				if (msprite->GetGravityHandler().IsFalling()) {
+					koopa->SetStunned(true);
+					mario->ResetMass();
+					mario->SetDy(-16);
+				}
+				else { mario->Damage();}
+			}
 		}
 	);
-	redkoopa_sprite->SetAnimFilm(film);
-	SetAnimator(animator);
-	animator->Start(animation, std::time(nullptr));
 }
 
 void Piranha::Init (void) {
@@ -454,7 +494,7 @@ void Mushroom::Init (void) {
 		GetSprite(),
 		mario->GetSprite(),
 		[mario, mush] (Sprite* s1, Sprite * s2) {
-			if (!mush->IsDead()) {
+			if (!mush->IsDead() && mush->GetSprite()->IsVisible()) {
 				al_play_sample(al.power_up_sample,3,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
 				mush->SetDead(true);
 				mario->SetSuper(true);
@@ -515,7 +555,7 @@ void OneUp::Init () {
 			GetSprite(),
 			box->GetSprite(),
 			[one] (Sprite* s1, Sprite* s2) {
-				if (*one->GetDx() == 0) { 
+				if (*one->GetDx() == 0 ) { 
 					one->GetSprite()->SetVisibility(true);
 					one->SetDx(1);
 				}
@@ -528,7 +568,7 @@ void OneUp::Init () {
 		GetSprite(),
 		mario->GetSprite(),
 		[mario, one] (Sprite* s1, Sprite * s2) {
-			if (!one->IsDead()) {
+			if (!one->IsDead() && one->GetSprite()->IsVisible()) {
 				one->SetDead(true);
 				mario->SetLives(mario->GetLives()+1);
 				SpriteManager::GetSingleton().Remove(one->GetSprite());

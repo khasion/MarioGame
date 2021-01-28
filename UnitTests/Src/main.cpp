@@ -77,7 +77,7 @@ void input (void) {
 	switch (al.event.type) {
 		case ALLEGRO_EVENT_TIMER:
 			if (al.key[ALLEGRO_KEY_Z]) {
-				player->SetDy(-10);
+				player->SetDy(-8);
 			}
 			if (al.key[ALLEGRO_KEY_LEFT]) {
 				player->SetDx(-1);
