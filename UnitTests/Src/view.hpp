@@ -25,7 +25,9 @@ typedef struct {
 	ALLEGRO_DISPLAY* disp;
 	ALLEGRO_MONITOR_INFO* monitor;
 	ALLEGRO_EVENT event;
-	ALLEGRO_SAMPLE *sample;
+	ALLEGRO_SAMPLE *sample,*coin_sample,*jump_sample,*die_sample,*underground_sample;
+	ALLEGRO_SAMPLE *power_up_sample,*stage_clear_sample,*pipe_sample,*gameover_sample;
+	ALLEGRO_SAMPLE_ID id,id_2;
 	bool done = false;
 	unsigned char key[ALLEGRO_KEY_MAX];
 }ALLEGRO;

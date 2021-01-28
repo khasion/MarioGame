@@ -4,8 +4,6 @@ using namespace app;
 Entity* enemy_1, *piranha,*mushroom;;
 Mario* player;
 Coin** coins;
-ALLEGRO_SAMPLE* coin_sample = NULL;
-ALLEGRO_SAMPLE* jump_sample = NULL;
 
 double g = 0;
 
@@ -41,12 +39,19 @@ void App::Initialize (void) {
 	must_init(al_init_primitives_addon(), "primitives");
 }
 
+
 void App::Load (void) {
 
-	al_reserve_samples(4);
-	al.sample = al_load_sample("mario.ogg");
-	coin_sample = al_load_sample("smb_coin.wav");
-	jump_sample = al_load_sample("smb_jump-small.wav");
+	al_reserve_samples(7);
+	al.sample = al_load_sample("samples/mario.ogg");
+	al.coin_sample = al_load_sample("samples/coin_sample.wav");
+	al.jump_sample = al_load_sample("samples/jump_sample.wav");
+	al.die_sample = al_load_sample("samples/die_sample.wav");
+	al.pipe_sample = al_load_sample("samples/pipe_sample.wav");
+	al.power_up_sample = al_load_sample("samples/power_up_sample.wav");
+	al.stage_clear_sample = al_load_sample("samples/stage_clear_sample.wav");
+	al.underground_sample = al_load_sample("samples/underground_sample.wav");
+	al.gameover_sample = al_load_sample("samples/gameover_sample.wav");
 
 	al_register_event_source(al.queue, al_get_keyboard_event_source());
 	al_register_event_source(al.queue, al_get_display_event_source(al.disp));
@@ -77,8 +82,16 @@ void App::Clear (void) {
 	al_destroy_timer(al.timer);
 	al_destroy_event_queue(al.queue);
 	al_destroy_sample(al.sample);
-	al_destroy_sample(coin_sample);
-	al_destroy_sample(jump_sample);
+	al_destroy_sample(al.coin_sample);
+	al_destroy_sample(al.jump_sample);
+	al_destroy_sample(al.die_sample);
+	al_destroy_sample(al.pipe_sample);
+	al_destroy_sample(al.power_up_sample);
+	al_destroy_sample(al.stage_clear_sample);
+	al_destroy_sample(al.underground_sample); 
+	al_destroy_sample(al.gameover_sample);
+
+
 }
 
 void InitPowerUps () {
@@ -144,7 +157,7 @@ void InitPiranha () {
 }
 
 void InitPlayer () {
-	player = new Mario(320, 430, 2, 1, 1);
+	player = new Mario(320, 430, 2, 1, 2);
 	player->SetOnDamage (
 		[]() {
 			player->SetHit(true);
@@ -166,15 +179,33 @@ void InitPlayer () {
 			);
 			scroll_animator->SetOnFinish(
 				[] (Animator* a) {
-					player->SetHit(false);
-					player->SetLives(player->GetLives()-1);
-					if (player->GetLives() <= 0) {player->SetDead(true);}
+					if(player->IsSuper()){
+						player->SetSuper(false);
+						al_play_sample(al.pipe_sample,3,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
+
+					}
+					else
+					{
+						player->SetHit(false);
+						player->SetLives(player->GetLives()-1);
+						al_play_sample(al.die_sample,3,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
+						if(player->GetLives() <= 0) {
+							al_stop_sample(&al.id);
+							al_play_sample(al.gameover_sample,3,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
+							player->SetDead(true);
+							
+
+							
+						}
+					}
 				}
 			);
 			scroll_animator->Start(scroll_animation, std::time(nullptr));
 		}
 	);
 	EntityManager::Get().Add("player", player);
+	player->SetLives(2);
+	al_play_sample(al.sample,3,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
 }
 
 void InitKoopas () {
@@ -224,6 +255,7 @@ void InitCollisions (void) {
 				[box](Sprite* s1, Sprite* s2) {
 					if (player->GetSprite()->GetGravityHandler().IsFalling()
 						&& !box->IsHit()) {
+						al_play_sample(al.coin_sample,3,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
 						box->SetHit(true);
 						player->AddCoin();
 						std::vector<ScrollEntry> entry;
@@ -259,7 +291,7 @@ void InitCollisions (void) {
 				coin->GetSprite(),
 				[coin, str](Sprite* s1, Sprite* s2) {
 					if (!coin->IsDead()) {
-						al_play_sample(coin_sample,3,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
+						al_play_sample(al.coin_sample,3,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
 						player->AddCoin();
 						coin->SetDead(true);
 						SpriteManager::GetSingleton().Remove(coin->GetSprite());
@@ -275,6 +307,9 @@ void InitCollisions (void) {
 		tele1->GetSprite(),
 		[] (Sprite* s1, Sprite* s2) {
 			if (al.key[ALLEGRO_KEY_DOWN]) {
+				al_play_sample(al.pipe_sample,4,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
+				al_stop_sample(&al.id);
+				al_play_sample(al.underground_sample,3,0,1,ALLEGRO_PLAYMODE_LOOP,&al.id_2);
 				player->GetSprite()->SetPos(210*16, 14*16);
 				tlayer->SetViewWindow({210*16-320, 0, 640, 480});
 			}
@@ -286,6 +321,8 @@ void InitCollisions (void) {
 		tele2->GetSprite(),
 		[] (Sprite* s1, Sprite* s2) {
 			if (al.key[ALLEGRO_KEY_RIGHT]) {
+				al_stop_sample(&al.id_2);
+				al_play_sample(al.sample,3,0,1,ALLEGRO_PLAYMODE_LOOP,&al.id);
 				player->GetSprite()->SetPos(133*16, 24*16);
 				tlayer->SetViewWindow({133*16-320, 0, 640, 480});
 			}

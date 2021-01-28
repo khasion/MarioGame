@@ -196,6 +196,7 @@ void Box::Do () {
 }
 
 void Mario::Init (void) {
+	al_play_sample(al.sample,3,0,1,ALLEGRO_PLAYMODE_LOOP,&al.id);
 	Sprite* mario = new Sprite(
 		startx,
 		starty,
@@ -454,6 +455,7 @@ void Mushroom::Init (void) {
 		mario->GetSprite(),
 		[mario, mush] (Sprite* s1, Sprite * s2) {
 			if (!mush->IsDead()) {
+				al_play_sample(al.power_up_sample,3,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
 				mush->SetDead(true);
 				mario->SetSuper(true);
 				mario->SetDy(-12);
