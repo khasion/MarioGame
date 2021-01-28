@@ -145,6 +145,14 @@ void Goomba::Do (void) {
 	newanimator->Start(newanimation, std::time(nullptr));
 }
 
+void Koopa::Do (void) {
+
+}
+
+void RedKoopa::Do (void) {
+
+}
+
 void Piranha::Do (Sprite* mario) {
 	Sprite* s = GetSprite();
 	Sprite* m = mario;
@@ -243,6 +251,84 @@ void Goomba::Init (void) {
 		std::cout << "stop falling." << std::endl;
 	});
 	sprite = goomba;
+}
+
+void Koopa::Init () {
+	Sprite* koopa_sprite = new Sprite(
+		startx,
+		starty,
+		AnimationFilmHolder::Get().GetAnimationFilm("koopal"),
+		"KOOPA"
+	);
+	SpriteManager::GetSingleton().Add(koopa_sprite);
+
+	koopa_sprite->PrepareSpriteGravityHandler(tlayer->GetGridLayer(), koopa_sprite);
+	koopa_sprite->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), koopa_sprite));
+	koopa_sprite->GetGravityHandler().SetOnSolidGround(
+	[koopa_sprite](const Rect& r) {
+		int dx = 0, dy = 1;
+		koopa_sprite->GetQuantizer().Move(r, &dx, &dy);
+		return (!dy) ? true : false;
+	});
+	koopa_sprite->GetGravityHandler().SetOnStartFalling(
+	[]() {
+		std::cout << "start falling." << std::endl;
+	});
+	koopa_sprite->GetGravityHandler().SetOnStopFalling(
+	[]() {
+		std::cout << "stop falling." << std::endl;
+	});
+	sprite = koopa_sprite;
+	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("koopal");
+	FrameRangeAnimation* animation = new FrameRangeAnimation("koopal", 0, 1, INT_MAX, 0, 0, 1);
+	FrameRangeAnimator*	animator = new FrameRangeAnimator();
+	animator->SetOnAction(
+		[koopa_sprite](Animator* animator, const Animation& anim) {
+			FrameRange_Action(koopa_sprite, animator, (const FrameRangeAnimation&) anim);
+		}
+	);
+	koopa_sprite->SetAnimFilm(film);
+	SetAnimator(animator);
+	animator->Start(animation, std::time(nullptr));
+}
+
+void RedKoopa::Init (void) {
+	Sprite* redkoopa_sprite = new Sprite(
+		startx,
+		starty,
+		AnimationFilmHolder::Get().GetAnimationFilm("redkoopal"),
+		"REDKOOPA"
+	);
+	SpriteManager::GetSingleton().Add(redkoopa_sprite);
+
+	redkoopa_sprite->PrepareSpriteGravityHandler(tlayer->GetGridLayer(), redkoopa_sprite);
+	redkoopa_sprite->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), redkoopa_sprite));
+	redkoopa_sprite->GetGravityHandler().SetOnSolidGround(
+	[redkoopa_sprite](const Rect& r) {
+		int dx = 0, dy = 1;
+		redkoopa_sprite->GetQuantizer().Move(r, &dx, &dy);
+		return (!dy) ? true : false;
+	});
+	redkoopa_sprite->GetGravityHandler().SetOnStartFalling(
+	[]() {
+		std::cout << "start falling." << std::endl;
+	});
+	redkoopa_sprite->GetGravityHandler().SetOnStopFalling(
+	[]() {
+		std::cout << "stop falling." << std::endl;
+	});
+	sprite = redkoopa_sprite;
+	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("redkoopal");
+	FrameRangeAnimation* animation = new FrameRangeAnimation("redkoopal", 0, 1, INT_MAX, 0, 0, 1);
+	FrameRangeAnimator*	animator = new FrameRangeAnimator();
+	animator->SetOnAction(
+		[redkoopa_sprite](Animator* animator, const Animation& anim) {
+			FrameRange_Action(redkoopa_sprite, animator, (const FrameRangeAnimation&) anim);
+		}
+	);
+	redkoopa_sprite->SetAnimFilm(film);
+	SetAnimator(animator);
+	animator->Start(animation, std::time(nullptr));
 }
 
 void Piranha::Init (void) {

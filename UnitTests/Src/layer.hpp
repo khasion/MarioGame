@@ -90,12 +90,16 @@ extern std::vector<std::pair<int, int>> boxes_xy;
 extern std::vector<std::pair<int, int>> mush_xy;
 extern std::vector<std::pair<int, int>> star_xy;
 extern std::vector<std::pair<int, int>> up_xy;
+extern std::vector<std::pair<int, int>> koopa_xy;
+extern std::vector<std::pair<int, int>> redkoopa_xy;
 
-#define COIN_INDEX 	26
-#define BOX_INDEX 	0
-#define MUSH_INDEX 	242
-#define STAR_INDEX	293
-#define UP_INDEX		243
+#define COIN_INDEX 		26
+#define BOX_INDEX 		0
+#define MUSH_INDEX 		242
+#define STAR_INDEX		293
+#define UP_INDEX			243
+#define KOOPA_INDEX		46
+#define REDKOOPA_INDEX	98
 
 #define EMPTY_INV_INDEX 239
 #define SOLID_INV_INDEX 240

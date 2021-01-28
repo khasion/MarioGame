@@ -40,6 +40,6 @@ void InitPiranha ();
 void InitPlayer ();
 void InitCoinAndBoxes ();
 void InitCollisions ();
-void InitEnemies ();
+void InitKoopas ();
 void InitPowerUps ();
 #endif

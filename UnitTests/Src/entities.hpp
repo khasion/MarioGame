@@ -153,6 +153,27 @@ public:
 	Star (int _x, int _y, int _u, double _m, int _lives) :
 		Entity (_x, _y, _u, _m, _lives) {Init();};
 };
+
+class Koopa : public Entity {
+private:
+public:
+	void Do (void) override;
+	void Do (Sprite*) override {};
+	void Init (void);
+	Koopa (int _x, int _y, int _u, double _m, int _lives) :
+		Entity (_x, _y, _u, _m, _lives) {Init();};
+};
+
+class RedKoopa : public Entity {
+private:
+public:
+	void Do (void) override;
+	void Do (Sprite*) override {};
+	void Init (void);
+	RedKoopa (int _x, int _y, int _u, double _m, int _lives) :
+		Entity (_x, _y, _u, _m, _lives) {Init();};
+};
+
 class EntityManager {
 private:
 	std::map<std::string, Entity*> entityMap;
