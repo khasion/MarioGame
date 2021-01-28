@@ -8,6 +8,8 @@ extern Entity* piranha;
 extern Entity* enemy_1;
 extern Entity* musroom;
 extern Coin** coins;
+extern ALLEGRO_SAMPLE* coin_sample;
+extern ALLEGRO_SAMPLE* jump_sample;
 extern double g;
 
 namespace app {

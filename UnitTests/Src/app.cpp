@@ -4,6 +4,9 @@ using namespace app;
 Entity* enemy_1, *piranha,*mushroom;;
 Mario* player;
 Coin** coins;
+ALLEGRO_SAMPLE* coin_sample = NULL;
+ALLEGRO_SAMPLE* jump_sample = NULL;
+
 double g = 0;
 
 void must_init(bool test, const char *description)
@@ -15,12 +18,13 @@ void must_init(bool test, const char *description)
 }
 
 void App::Initialize (void) {
+
 	must_init(al_init(), "allegro");
 	must_init(al_install_keyboard(), "keyboard");
 
 	al_install_audio();
 	al_init_acodec_addon();
-	
+
 	al.timer = al_create_timer(FPS);
 	must_init(al.timer, "timer");
 
@@ -39,9 +43,11 @@ void App::Initialize (void) {
 
 void App::Load (void) {
 
-	al_reserve_samples(1);
+	al_reserve_samples(4);
 	al.sample = al_load_sample("mario.ogg");
-	
+	coin_sample = al_load_sample("smb_coin.wav");
+	jump_sample = al_load_sample("smb_jump-small.wav");
+
 	al_register_event_source(al.queue, al_get_keyboard_event_source());
 	al_register_event_source(al.queue, al_get_display_event_source(al.disp));
 	al_register_event_source(al.queue, al_get_timer_event_source(al.timer));
@@ -70,6 +76,8 @@ void App::Clear (void) {
 	al_destroy_timer(al.timer);
 	al_destroy_event_queue(al.queue);
 	al_destroy_sample(al.sample);
+	al_destroy_sample(coin_sample);
+	al_destroy_sample(jump_sample);
 }
 
 void InitPowerUps () {
@@ -235,6 +243,7 @@ void InitCollisions (void) {
 				coin->GetSprite(),
 				[coin, str](Sprite* s1, Sprite* s2) {
 					if (!coin->IsDead()) {
+						al_play_sample(coin_sample,3,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
 						player->AddCoin();
 						coin->SetDead(true);
 						SpriteManager::GetSingleton().Remove(coin->GetSprite());
