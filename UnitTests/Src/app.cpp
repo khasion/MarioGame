@@ -181,13 +181,13 @@ void InitKoopas () {
 	int i = 0;
 	for (auto it = koopa_xy.begin(); it != koopa_xy.end(); ++it) {
 		int x = (*it).first, y = (*it).second;
-		EntityManager::Get().Add("koopas"+std::to_string(i), new Koopa(x, y+16, 2, 2, 1));
+		EntityManager::Get().Add("koopas"+std::to_string(i), new Koopa(x, y-8, 2, 2, 1));
 		i++;
 	}
 	i = 0;
 	for (auto it = redkoopa_xy.begin(); it != redkoopa_xy.end(); ++it) {
 		int x = (*it).first, y = (*it).second;
-		EntityManager::Get().Add("redkoopas"+std::to_string(i), new RedKoopa(x, y+16, 2, 2, 1));
+		EntityManager::Get().Add("redkoopas"+std::to_string(i), new RedKoopa(x, y-8, 2, 2, 1));
 		i++;
 	}
 }
