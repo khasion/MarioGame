@@ -92,6 +92,9 @@ extern std::vector<std::pair<int, int>> star_xy;
 extern std::vector<std::pair<int, int>> up_xy;
 extern std::vector<std::pair<int, int>> koopa_xy;
 extern std::vector<std::pair<int, int>> redkoopa_xy;
+extern std::vector<std::pair<int, int>> checkpoint_xy;
+extern std::vector<std::pair<int, int>> brick_xy;
+extern std::vector<std::pair<int, int>> squirrel_xy;
 
 #define COIN_INDEX 		26
 #define BOX_INDEX 		0
@@ -100,6 +103,9 @@ extern std::vector<std::pair<int, int>> redkoopa_xy;
 #define UP_INDEX			243
 #define KOOPA_INDEX		46
 #define REDKOOPA_INDEX	98
+#define CHECKPOINT_INDEX 471
+#define BRICK_INDEX 		3
+#define SQUIRREL_INDEX	244
 
 #define EMPTY_INV_INDEX 239
 #define SOLID_INV_INDEX 240

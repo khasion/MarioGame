@@ -69,9 +69,9 @@ void App::Load (void) {
 	InitPlayer ();
 	InitGoomba ();
 	InitPiranha ();
+	InitKoopas ();
 	InitCoinAndBoxes ();
 	InitPowerUps();
-	InitKoopas ();
 	InitCollisions ();
 }
 
@@ -113,6 +113,12 @@ void InitPowerUps () {
 		EntityManager::Get().Add("star"+std::to_string(i), new Star(x, y-2, 1, 3, 1));
 		i++;
 	}
+	i = 0;
+	for (auto it = squirrel_xy.begin(); it != squirrel_xy.end(); ++it) {
+		int x = (*it).first, y = (*it).second;
+		EntityManager::Get().Add("squirrel"+std::to_string(i), new Squirrel(x, y-2, 1, 3, 1));
+		i++;
+	}
 }
 
 void InitGoomba () {
@@ -121,6 +127,7 @@ void InitGoomba () {
 		[]() {
 			enemy_1->SetLives(enemy_1->GetLives()-1);
 			if (!enemy_1->GetLives()) {
+				player->AddPoints(100);
 				SpriteManager::GetSingleton().Remove(enemy_1->GetSprite());
 				EntityManager::Get().Remove("goomba1", enemy_1);
 			}
@@ -140,16 +147,54 @@ void InitCoinAndBoxes () {
 	i = 0;
 	for (auto it = boxes_xy.begin(); it != boxes_xy.end(); ++it) {
 		int x = (*it).first, y = (*it).second;
-		EntityManager::Get().Add("box"+std::to_string(i), new Box(x, y+1, 10));
+		Box* b = new Box(x, y+1, rand()%10 + 1);
+		EntityManager::Get().Add("box"+std::to_string(i), b);
+		b->SetOnDamage(
+			[b](){
+				b->SetLives(b->GetLives()-1);
+				if (b->GetLives() >= 0) { 
+					player->AddCoin();
+				}
+			}
+		);
 		i++;
+	}
+	i = 0;
+	for (auto it = checkpoint_xy.begin(); it != checkpoint_xy.end(); ++it) {
+		int x = (*it).first, y = (*it).second;
+		Coin* c = new Coin(x, y);
+		EntityManager::Get().Add("check"+std::to_string(i), c);
+		c->GetSprite()->SetVisibility(false);
+	}
+	i = 0;
+	for (auto it = brick_xy.begin(); it != brick_xy.end(); ++it) {
+		int x = (*it).first, y = (*it).second;
+		Brick* brick = new Brick(x, y+1);
+		std::string str = "brick"+std::to_string(i);
+		EntityManager::Get().Add(str, brick);
+		brick->SetOnDamage(
+			[brick, x, y, str] () {
+				SpriteManager::GetSingleton().Remove(brick->GetSprite());
+				EntityManager::Get().Remove(str, brick);
+				GridMap* grid = tlayer->GetGridLayer()->GetBuffer();
+				(*grid)[DIV_TILE_HEIGHT(y)][DIV_TILE_WIDTH(x)] = GRID_EMPTY_TILE;
+			}
+		);
 	}
 }
 
 void InitPiranha () {
 	piranha = new Piranha (57*16+8, 480-130, 1);
-	Coin* tele1 = new Coin(57*16+8, 480-138);
-	Coin* tele2 = new Coin(229*16-8, 19*16);
-	tele1->GetSprite()->SetVisibility(false);
+	piranha->SetOnDamage (
+		[] () {
+			player->AddPoints(200);
+			SpriteManager::GetSingleton().Remove(piranha->GetSprite());
+			EntityManager::Get().Remove("piran", piranha);
+			SpriteManager::GetSingleton().Remove( ((Piranha*)piranha)->GetColl());
+		}
+	);
+	Teleporter* tele1 = new Teleporter(57*16, 480-131);
+	Teleporter* tele2 = new Teleporter(229*16-8, 19*16);
 	tele2->GetSprite()->SetVisibility(false);
 	EntityManager::Get().Add("piran", piranha);
 	EntityManager::Get().Add("tele1", tele1);
@@ -183,15 +228,12 @@ void InitPlayer () {
 					player->SetHit(false);
 					if(player->IsSuper()){
 						player->SetSuper(false);
-						al_play_sample(al.pipe_sample,3,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
 					}
 					else
 					{
 						player->SetLives(player->GetLives()-1);
+						player->SetDead(true);
 						if(player->GetLives() < 0) {
-							al_play_sample(al.die_sample,3,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
-							al_stop_sample(&al.id);
-							al_play_sample(al.gameover_sample,3,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
 							player->SetDead(true);
 						}
 					}
@@ -202,20 +244,42 @@ void InitPlayer () {
 	);
 	EntityManager::Get().Add("player", player);
 	player->SetLives(2);
-	al_play_sample(al.sample,3,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
 }
-
 void InitKoopas () {
 	int i = 0;
 	for (auto it = koopa_xy.begin(); it != koopa_xy.end(); ++it) {
 		int x = (*it).first, y = (*it).second;
-		EntityManager::Get().Add("koopas"+std::to_string(i), new Koopa(x, y-32, 2, 2, 1, false));
+		Koopa* koopa = new Koopa(x, y-32, 2, 2, 1, false);
+		std::string str = "koopas"+std::to_string(i);
+		EntityManager::Get().Add("koopas"+std::to_string(i), koopa);
+		koopa->SetOnDamage (
+			[koopa, str] () {
+				koopa->SetLives(koopa->GetLives()-1);
+				if (!koopa->GetLives()) {
+					player->AddPoints(100);
+					SpriteManager::GetSingleton().Remove(koopa->GetSprite());
+					EntityManager::Get().Remove(str, koopa);
+				}
+			}
+		);
 		i++;
 	}
 	i = 0;
 	for (auto it = redkoopa_xy.begin(); it != redkoopa_xy.end(); ++it) {
 		int x = (*it).first, y = (*it).second;
-		EntityManager::Get().Add("redkoopas"+std::to_string(i), new Koopa(x, y-32, 2, 2, 1, true));
+		Koopa* koopa = new Koopa(x, y-32, 2, 2, 1, true);
+		std::string str = "redkoopas"+std::to_string(i);
+		EntityManager::Get().Add(str, koopa);
+		koopa->SetOnDamage (
+			[koopa, str] () {
+				koopa->SetLives(koopa->GetLives()-1);
+				if (!koopa->GetLives()) {
+					player->AddPoints(100);
+					SpriteManager::GetSingleton().Remove(koopa->GetSprite());
+					EntityManager::Get().Remove(str, koopa);
+				}
+			}
+		);
 		i++;
 	}
 }
@@ -227,9 +291,11 @@ void InitCollisions (void) {
 		[](Sprite* s1, Sprite* s2) {
 			if (player->IsHit()
 			|| enemy_1->GetLives() <= 0) { return;}
+			if ( player->IsInv()) { enemy_1->Damage();}
 			if (s1->GetGravityHandler().IsFalling()) {
 				enemy_1->Damage();
-				player->SetDy(-16);
+				player->ResetMass();
+				player->SetDy(-12);
 			}
 			else { player->Damage();}
 		});
@@ -239,6 +305,7 @@ void InitCollisions (void) {
 		[](Sprite* s1, Sprite* s2) {
 			if (player->IsHit()
 			|| piranha->GetLives() <= 0) { return;}
+			if (player->IsInv()) { piranha->Damage(); return;}
 			if (piranha->GetSprite()->GetFrame() >= piranha->GetSprite()->GetAnimFilm()->GetTotalFrames()-2) { return;}
 			player->Damage();
 		}
@@ -253,9 +320,8 @@ void InitCollisions (void) {
 				[box](Sprite* s1, Sprite* s2) {
 					if (player->GetSprite()->GetGravityHandler().IsFalling()
 						&& !box->IsHit()) {
-						al_play_sample(al.coin_sample,3,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
 						box->SetHit(true);
-						player->AddCoin();
+						box->Damage();
 						std::vector<ScrollEntry> entry;
 						entry.push_back({0, -5, 1}); entry.push_back({0, 5, 1});
 						entry.push_back({0, 5, 1});
@@ -289,7 +355,6 @@ void InitCollisions (void) {
 				coin->GetSprite(),
 				[coin, str](Sprite* s1, Sprite* s2) {
 					if (!coin->IsDead()) {
-						al_play_sample(al.coin_sample,3,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
 						player->AddCoin();
 						coin->SetDead(true);
 						SpriteManager::GetSingleton().Remove(coin->GetSprite());
@@ -299,17 +364,32 @@ void InitCollisions (void) {
 			);
 		}
 	}
-	Coin* tele1 = (Coin*)EntityManager::Get().Get("tele1");
+	Teleporter* tele1 = (Teleporter*)EntityManager::Get().Get("tele1");
 	CollisionChecker::GetSingleton().Register (
 		player->GetSprite(),
 		tele1->GetSprite(),
 		[] (Sprite* s1, Sprite* s2) {
 			if (al.key[ALLEGRO_KEY_DOWN]) {
-				al_play_sample(al.pipe_sample,4,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
+				al_play_sample(al.pipe_sample,1,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
 				al_stop_sample(&al.id);
-				al_play_sample(al.underground_sample,3,0,1,ALLEGRO_PLAYMODE_LOOP,&al.id_2);
-				player->GetSprite()->SetPos(210*16, 14*16);
-				tlayer->SetViewWindow({210*16-320, 0, 640, 480});
+				al_play_sample(al.underground_sample,1,0,1,ALLEGRO_PLAYMODE_LOOP,&al.id_2);
+				std::string id = player->GetSprite()->GetAnimFilm()->GetId();
+				FrameRangeAnimation* f = new FrameRangeAnimation(id, 0, 0, 1, 0, 1, 2);
+				FrameRangeAnimator* a = new FrameRangeAnimator();
+				Sprite* sprite = player->GetSprite();
+				a->SetOnAction(
+					[sprite](Animator* animator, const Animation& anim) {
+						sprite->SetPos(sprite->GetX(), sprite->GetY()+1);
+						FrameRange_Action(sprite, animator, (const FrameRangeAnimation&) anim);
+					}
+				);
+				a->SetOnFinish(
+					[] (Animator* animator) {
+						player->GetSprite()->SetPos(210*16, 14*16);
+						tlayer->SetViewWindow({210*16-320, 0, 640, 480});
+					}
+				);
+				a->Start(f, std::time(nullptr));
 			}
 		}
 	);
@@ -320,10 +400,22 @@ void InitCollisions (void) {
 		[] (Sprite* s1, Sprite* s2) {
 			if (al.key[ALLEGRO_KEY_RIGHT]) {
 				al_stop_sample(&al.id_2);
-				al_play_sample(al.sample,3,0,1,ALLEGRO_PLAYMODE_LOOP,&al.id);
+				al_play_sample(al.sample,1,0,1,ALLEGRO_PLAYMODE_LOOP,&al.id);
 				player->GetSprite()->SetPos(133*16, 24*16);
 				tlayer->SetViewWindow({133*16-320, 0, 640, 480});
 			}
 		}
 	);
+	for (auto it = list.begin(); it != list.end(); ++it) {
+		if ((*it).first.substr(0, 5).compare("check") == 0) {
+			Coin* check = (Coin*)(*it).second;
+			CollisionChecker::GetSingleton().Register (
+				player->GetSprite(),
+				check->GetSprite(),
+				[check] (Sprite* s1, Sprite* s2) {
+					player->SetCheck(check->GetStartPos().x);
+				}
+			);
+		}
+	}
 }

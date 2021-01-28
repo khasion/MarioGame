@@ -76,8 +76,29 @@ void Mushroom::Do (void) {
 		}
 	);
 	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("mushroom");
-	FrameRangeAnimation* newanimation = new FrameRangeAnimation("mushroom", 0, 2, INT_MAX, 0, 0, 1);
+	FrameRangeAnimation* newanimation = new FrameRangeAnimation("mushroom", 0, 0, INT_MAX, 0, 0, 1);
 	mushroom->SetAnimFilm(film);
+	SetAnimator(newanimator);
+	newanimator->Start(newanimation, std::time(nullptr));
+}
+
+void Squirrel::Do (void) {
+	Sprite* squi = GetSprite();
+	int *dx = GetDx(), *dy = GetDy();
+	int tempdx = *dx;
+	squi->GetQuantizer().Move(squi->GetBox(), dx, dy);
+	if (*dx == 0) { *dx = tempdx * (-1);}
+	squi->Move(*dx, *dy);
+	if (GetAnimator()) { return;}
+	FrameRangeAnimator* newanimator = new FrameRangeAnimator();
+	newanimator->SetOnAction(
+		[squi](Animator* animator, const Animation& anim) {
+			FrameRange_Action(squi, animator, (const FrameRangeAnimation&) anim);
+		}
+	);
+	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("squirrel");
+	FrameRangeAnimation* newanimation = new FrameRangeAnimation("squirrel", 0, 0, INT_MAX, 0, 0, 1);
+	squi->SetAnimFilm(film);
 	SetAnimator(newanimator);
 	newanimator->Start(newanimation, std::time(nullptr));
 }
@@ -155,32 +176,40 @@ void Koopa::Do (void) {
 	koopa_sprite->Move(*dx, *dy);
 	std::string curr;
 	std::string prev = koopa_sprite->GetAnimFilm()->GetId();
-	int d = 1;
-	int start = 0, end = 1;
+	int d = 1; bool wakeup = false;
+	int start = 0, end = 1, rep = INT_MAX; 
 	if (*dx >= 0) 		{ curr = "koopar";}
 	if (*dx < 0) 		{ curr = "koopal";}
 	if (IsRed()) 		{ curr = "red" + curr;}
-	if (IsStunned())	{ curr = "stunned_" + curr; end = 0; d = 2;}
-	if (*dx == 0) 		{ end = 1; d = 2;}
+	if (IsStunned())	{ 
+		curr = "stunned_" + curr; end = 0; d = 2;
+		if (*dx == 0) {
+			curr = "wakeup_" + curr;
+			end = 1; d = 2; rep = 2;
+			wakeup = true;
+		}
+	}
 
 	if (curr.compare(prev) == 0) { return;}
+	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm(curr);
+	FrameRangeAnimation* newanimation = new FrameRangeAnimation(curr, start, end, rep, 0, 0, d);
 	FrameRangeAnimator* newanimator = new FrameRangeAnimator();
 	newanimator->SetOnAction(
 		[koopa_sprite](Animator* animator, const Animation& anim) {
 			FrameRange_Action(koopa_sprite, animator, (const FrameRangeAnimation&) anim);
 		}
 	);
-	if (*dx == 0 && IsStunned()) {
+	if (wakeup) {
 		Koopa* koopa = this;
 		newanimator->SetOnFinish(
 			[koopa](Animator* animator) {
+				if (*koopa->GetDx()) { return;}
 				koopa->SetDy(-8);
+				koopa->SetDx(1);
 				koopa->SetStunned(false);
 			}
 		);
 	}
-	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm(curr);
-	FrameRangeAnimation* newanimation = new FrameRangeAnimation(curr, start, end, INT_MAX, 0, 0, d);
 	koopa_sprite->SetAnimFilm(film);
 	SetAnimator(newanimator);
 	newanimator->Start(newanimation, std::time(nullptr));
@@ -196,7 +225,7 @@ void Piranha::Do (Sprite* mario) {
 	}
 	else {
 		if (GetAnimator()->HasFinished()) {
-			FrameRangeAnimation* f = new FrameRangeAnimation("piran", 0, 9, INT_MAX, 0, -2, 1);
+			FrameRangeAnimation* f = new FrameRangeAnimation("piran", 0, 14, INT_MAX, 0, -2, 1);
 			((FrameRangeAnimator*)GetAnimator())->Start(
 				f,
 				std::time(nullptr)
@@ -218,45 +247,71 @@ void Coin::Do () {
 	);
 }
 
-void Box::Do () {
+void Teleporter::Do () {
 	Sprite* s = GetSprite();
 	if (GetAnimator()) { return;}
-	FrameRangeAnimation* f = new FrameRangeAnimation("boxes", 0, 2, INT_MAX, 0, 0, 1);
+	FrameRangeAnimation* f = new FrameRangeAnimation("tele", 0, 0, INT_MAX, 0, 0, 1);
+	((FrameRangeAnimator*)GetAnimator())->Start (
+		f,
+		std::time(nullptr)
+	);
+}
+
+void Box::Do () {
+	Sprite* s = GetSprite();
+	std::string prev = s->GetAnimFilm()->GetId();
+	std::string curr;
+	int start = 0, end = 2;
+	if (GetLives() > 0) { curr = "boxes";}
+	else { curr = "dead_boxes"; end = 0;}
+	if (prev.compare(curr) == 0) { return;}
+	FrameRangeAnimation* f = new FrameRangeAnimation(curr, start, end, INT_MAX, 0, 0, 1);
+	FrameRangeAnimator* a = new FrameRangeAnimator();
+	a->SetOnAction(
+		[s](Animator* animator, const Animation& anim) {
+			FrameRange_Action(s, animator, (const FrameRangeAnimation&) anim);
+		}
+	);
+	s->SetAnimFilm(AnimationFilmHolder::Get().GetAnimationFilm(curr));
+	SetAnimator(a);
 	((FrameRangeAnimator*)GetAnimator())->Start(
 		f,
 		std::time(nullptr)
 	);
 }
 
+void Brick::Do () {
+}
+
 void Mario::Init (void) {
-	al_play_sample(al.sample,3,0,1,ALLEGRO_PLAYMODE_LOOP,&al.id);
-	Sprite* mario = new Sprite(
+	Sprite* mario_sprite = new Sprite(
 		startx,
 		starty,
 		AnimationFilmHolder::Get().GetAnimationFilm("mario_standl"),
 		"MARIO"
 	);
-	SpriteManager::GetSingleton().Add(mario);
-	mario->PrepareSpriteGravityHandler(tlayer->GetGridLayer(), mario);
-	mario->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), mario));
-	mario->GetGravityHandler().SetOnSolidGround(
+	SpriteManager::GetSingleton().Add(mario_sprite);
+	mario_sprite->PrepareSpriteGravityHandler(tlayer->GetGridLayer(), mario_sprite);
+	mario_sprite->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), mario_sprite));
+	Mario* mario = this;
+	mario_sprite->GetGravityHandler().SetOnSolidGround(
 		[mario](const Rect& r) {
 			int dx = 0, dy = 1;
-			mario->GetQuantizer().Move(r, &dx, &dy);
+			mario->GetSprite()->GetQuantizer().Move(r, &dx, &dy);
 			return (!dy) ? true : false;
 		}
 	);
-	mario->GetGravityHandler().SetOnStartFalling(
-		[]() {
+	mario_sprite->GetGravityHandler().SetOnStartFalling(
+		[mario]() {
 			std::cout << "start falling." << std::endl;
 		}
 	);
-	mario->GetGravityHandler().SetOnStopFalling(
+	mario_sprite->GetGravityHandler().SetOnStopFalling(
 		[]() {
 			std::cout << "stop falling." << std::endl;
 		}
 	);
-	SetSprite(mario);
+	SetSprite(mario_sprite);
 }
 
 void Goomba::Init (void) {
@@ -334,28 +389,32 @@ void Koopa::Init () {
 	SetAnimator(animator);
 	animator->Start(animation, std::time(nullptr));
 	SetDx(-1);
+
 	Mario* mario = (Mario*)EntityManager::Get().Get("player");
 	CollisionChecker::GetSingleton().Register(
 		GetSprite(),
 		mario->GetSprite(),
 		[mario, koopa] (Sprite* s1, Sprite * s2) {
+			if (koopa->GetLives() <= 0) { return;}
+			if (mario->IsInv()) { koopa->Damage(); return;}
 			Sprite* msprite = mario->GetSprite();
 			if (koopa->IsStunned()) {
-				if (!msprite->GetGravityHandler().IsFalling()) {
+				if (!msprite->GetGravityHandler().IsFalling() && *koopa->GetDx() != 0) {
 					mario->Damage();
+					return;
 				}
 				if (mario->GetSprite()->GetX() > koopa->GetSprite()->GetX()) {
-					koopa->SetDx(-1);
-					mario->ResetMass();
-					mario->SetDy(-16);
+					if (*koopa->GetDx() != 0) {koopa->SetDx(0);}
+					else {koopa->SetDx(-1);}
 				}
-				else if (mario->GetSprite()->GetX() < koopa->GetSprite()->GetX()){
-					koopa->SetDx(1);
-					mario->ResetMass();
-					mario->SetDy(-16);
+				else if (mario->GetSprite()->GetX() <= koopa->GetSprite()->GetX()){
+					if (*koopa->GetDx() != 0) {koopa->SetDx(0);}
+					else {koopa->SetDx(1);}
 				}
 				else {
 					koopa->SetDx(0);
+				}
+				if (msprite->GetGravityHandler().IsFalling()) {
 					mario->ResetMass();
 					mario->SetDy(-16);
 				}
@@ -370,6 +429,23 @@ void Koopa::Init () {
 			}
 		}
 	);
+	auto list = EntityManager::Get().GetAll();
+	for (auto it = list.begin(); it != list.end(); ++it) {
+		Entity* e = (*it).second;
+		Sprite* s = e->GetSprite();
+		if (s->GetTypeId().compare("GOOMBA") != 0 
+		&& s->GetTypeId().compare("KOOPA") != 0) { continue;}
+		CollisionChecker::GetSingleton().Register(
+			koopa->GetSprite(),
+			s,
+			[e, koopa] (Sprite* s1, Sprite* s2) {
+				std::cout << "ASDAS" << std::endl;
+				if (koopa->IsStunned() && *koopa->GetDx() != 0) {
+					e->Damage();
+				}
+			}
+		);
+	}
 }
 
 void Piranha::Init (void) {
@@ -392,7 +468,7 @@ void Piranha::Init (void) {
 	SpriteManager::GetSingleton().Add(piranha_sprite);
 
 	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("piran");
-	FrameRangeAnimation* animation = new FrameRangeAnimation("piran", 0, 9, INT_MAX, 0, -2, 1);
+	FrameRangeAnimation* animation = new FrameRangeAnimation("piran", 0, 14, INT_MAX, 0, -2, 1);
 	FrameRangeAnimator*	animator = new FrameRangeAnimator();
 	animator->SetOnAction(
 		[piranha_sprite](Animator* animator, const Animation& anim) {
@@ -427,6 +503,31 @@ void Coin::Init (void) {
 	);
 	sprite = coin_sprite;
 	coin_sprite->SetAnimFilm(film);
+	SetAnimator(animator);
+	animator->Start(animation, std::time(nullptr));
+}
+
+void Teleporter::Init (void) {
+	Sprite* tele_sprite = new Sprite (
+		startx,
+		starty,
+		AnimationFilmHolder::Get().GetAnimationFilm("tele"),
+		"TELE"
+	);
+	tele_sprite->SetZorder(1);
+	SpriteManager::GetSingleton().Add(tele_sprite);
+	tele_sprite->SetHasDirectMotion(true);
+	tele_sprite->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), tele_sprite));
+	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("tele");
+	FrameRangeAnimation* animation = new FrameRangeAnimation("tele", 0, 0, INT_MAX, 0, 0, 1);
+	FrameRangeAnimator*	animator = new FrameRangeAnimator();
+	animator->SetOnAction(
+		[tele_sprite](Animator* animator, const Animation& anim) {
+			FrameRange_Action(tele_sprite, animator, (const FrameRangeAnimation&) anim);
+		}
+	);
+	sprite = tele_sprite;
+	tele_sprite->SetAnimFilm(film);
 	SetAnimator(animator);
 	animator->Start(animation, std::time(nullptr));
 }
@@ -495,11 +596,85 @@ void Mushroom::Init (void) {
 		mario->GetSprite(),
 		[mario, mush] (Sprite* s1, Sprite * s2) {
 			if (!mush->IsDead() && mush->GetSprite()->IsVisible()) {
-				al_play_sample(al.power_up_sample,3,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
+				al_play_sample(al.power_up_sample,1,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
 				mush->SetDead(true);
 				mario->SetSuper(true);
 				mario->SetDy(-12);
 				SpriteManager::GetSingleton().Remove(mush->GetSprite());
+			}
+		}
+	);
+}
+
+void Squirrel::Init () {
+	Sprite* squi_sprite  = new Sprite (
+		startx,
+		starty,
+		AnimationFilmHolder::Get().GetAnimationFilm("squirrel"),
+		"SQUIRREL"
+	);
+	squi_sprite->SetVisibility(false);
+	squi_sprite->PrepareSpriteGravityHandler(tlayer->GetGridLayer(), squi_sprite);
+
+	squi_sprite->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), squi_sprite));
+	squi_sprite->GetGravityHandler().SetOnSolidGround(
+	[squi_sprite](const Rect& r) {
+		int dx = 0, dy = 1;
+		squi_sprite->GetQuantizer().Move(r, &dx, &dy);
+		return (!dy) ? true : false;
+	});
+	squi_sprite->GetGravityHandler().SetOnStartFalling(
+	[]() {
+		std::cout << "start falling." << std::endl;
+	});
+	squi_sprite->GetGravityHandler().SetOnStopFalling(
+	[]() {
+		std::cout << "stop falling." << std::endl;
+	});
+
+	SpriteManager::GetSingleton().Add(squi_sprite);
+
+	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("squirrel");
+	FrameRangeAnimation* animation = new FrameRangeAnimation("squirrel", 0, 0, INT_MAX, 0, 0, 1);
+	FrameRangeAnimator*	animator = new FrameRangeAnimator();
+	animator->SetOnAction(
+		[squi_sprite](Animator* animator, const Animation& anim) {
+			FrameRange_Action(squi_sprite, animator, (const FrameRangeAnimation&) anim);
+		}
+	);
+	sprite = squi_sprite;
+	squi_sprite->SetAnimFilm(film);
+	SetAnimator(animator);
+	animator->Start(animation, std::time(nullptr));
+	
+	auto list = EntityManager::Get().GetAll();
+	Squirrel* squi = this;
+	for (auto it = list.begin(); it != list.end(); ++it) {
+		if ((*it).first.substr(0, 3).compare("box") != 0) { continue;}
+		Box* box = (Box*)(*it).second;
+		CollisionChecker::GetSingleton().Register(
+			GetSprite(),
+			box->GetSprite(),
+			[squi] (Sprite* s1, Sprite* s2) {
+				if (*squi->GetDx() == 0) { 
+					squi->GetSprite()->SetVisibility(true);
+					squi->SetDx(1);
+				}
+				else { squi->SetDx(*squi->GetDx()*(-1));}
+			}
+		);
+	}
+	Mario* mario = (Mario*)EntityManager::Get().Get("player");
+	CollisionChecker::GetSingleton().Register(
+		GetSprite(),
+		mario->GetSprite(),
+		[mario, squi] (Sprite* s1, Sprite * s2) {
+			if (!squi->IsDead() && squi->GetSprite()->IsVisible()) {
+				al_play_sample(al.power_up_sample,1,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
+				squi->SetDead(true);
+				mario->SetG(0.01);
+				mario->SetDy(-12);
+				SpriteManager::GetSingleton().Remove(squi->GetSprite());
 			}
 		}
 	);
@@ -571,6 +746,7 @@ void OneUp::Init () {
 			if (!one->IsDead() && one->GetSprite()->IsVisible()) {
 				one->SetDead(true);
 				mario->SetLives(mario->GetLives()+1);
+				mario->AddPoints(1000);
 				SpriteManager::GetSingleton().Remove(one->GetSprite());
 			}
 		}
@@ -635,6 +811,35 @@ void Star::Init (void) {
 			}
 		);
 	}
+	Mario* mario = (Mario*)EntityManager::Get().Get("player");
+	CollisionChecker::GetSingleton().Register(
+		GetSprite(),
+		mario->GetSprite(),
+		[mario, star] (Sprite* s1, Sprite* s2) {
+			if (star->GetSprite()->IsVisible()) {
+				star->GetSprite()->SetVisibility(false);
+				mario->SetInv(true);
+				FlashAnimation* flash = new FlashAnimation("", 30, 1, 1);
+				FlashAnimator* a = new FlashAnimator();
+				Sprite* sprite = mario->GetSprite();
+				a->SetOnAction(
+					[sprite](Animator* animator, const Animation& anim) {
+						Sprite_FlashAction(sprite, (FlashAnimator*) animator, &(const FlashAnimation&) anim);
+					}
+				);
+				a->SetOnFinish (
+					[mario](Animator* animator) {
+						mario->GetSprite()->SetVisibility(true);
+						if (((FlashAnimator*)animator)->GetCurrRep() >= 30) {
+							mario->SetInv(false);
+						}
+					}
+				);
+				SpriteManager::GetSingleton().Remove(star->GetSprite());
+				a->Start(flash, std::time(nullptr));
+			}
+		}
+	);
 }
 
 void Box::Init (void) {
@@ -660,4 +865,57 @@ void Box::Init (void) {
 	box_sprite->SetAnimFilm(film);
 	SetAnimator(animator);
 	animator->Start(animation, std::time(nullptr));
+
+	Box* box = this;
+	auto list = EntityManager::Get().GetAll();
+	for (auto it = list.begin(); it != list.end(); ++it) {
+		Entity* e = (*it).second;
+		Sprite* s = e->GetSprite();
+		if (s->GetTypeId().compare("KOOPA") != 0 &&
+			s->GetTypeId().compare("GOOMBA") != 0) { continue;}
+		CollisionChecker::GetSingleton().Register(
+			box->GetSprite(),
+			s,
+			[e] (Sprite* s1, Sprite* s2) {
+				e->Damage();
+			}
+		);
+	}
+}
+
+void Brick::Init () {
+	Sprite* brick_sprite  = new Sprite (
+		startx,
+		starty,
+		AnimationFilmHolder::Get().GetAnimationFilm("brick"),
+		"BRICK"
+	);
+
+	SpriteManager::GetSingleton().Add(brick_sprite);
+	brick_sprite->SetHasDirectMotion(true);
+	brick_sprite->SetMove(MakeSpriteGridLayerMover (tlayer->GetGridLayer(), brick_sprite));
+	AnimationFilm* film = AnimationFilmHolder::Get().GetAnimationFilm("brick");
+	FrameRangeAnimation* animation = new FrameRangeAnimation("brick", 0, 0, INT_MAX, 0, 0, 1);
+	FrameRangeAnimator*	animator = new FrameRangeAnimator();
+	animator->SetOnAction(
+		[brick_sprite](Animator* animator, const Animation& anim) {
+			FrameRange_Action(brick_sprite, animator, (const FrameRangeAnimation&) anim);
+		}
+	);
+	sprite = brick_sprite;
+	brick_sprite->SetAnimFilm(film);
+	SetAnimator(animator);
+	animator->Start(animation, std::time(nullptr));
+
+	Brick* brick = this;
+	Mario* mario = (Mario*)EntityManager::Get().Get("player");
+	CollisionChecker::GetSingleton().Register(
+		brick->GetSprite(),
+		mario->GetSprite(),
+		[mario, brick] (Sprite* s1, Sprite* s2) {
+			if (mario->IsSuper() || mario->IsInv()) {
+				brick->Damage();
+			}
+		}
+	);
 }

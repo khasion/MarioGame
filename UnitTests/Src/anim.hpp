@@ -304,6 +304,25 @@ public:
 	ScrollAnimator (void) = default;
 };
 
+class FlashAnimator : public Animator {
+protected:
+	FlashAnimation* anim = nullptr;
+	unsigned currRep = 0;
+public:
+	void Progress (timestamp_t currTime);
+	unsigned GetCurrRep (void) const { return currRep;}
+	void Start (FlashAnimation* a, timestamp_t t) {
+		anim	= a;
+		lastTime = t;
+		state = ANIMATOR_RUNNING;
+		currRep = 0;
+		NotifyStarted();
+		NotifyAction(*anim);
+	}
+	FlashAnimation* GetAnim (void) { return anim;}
+	FlashAnimator (void) = default;
+};
+
 class AnimatorManager {	
 private:
 	std::set<Animator*> running, suspended;
@@ -610,6 +629,7 @@ void FrameRange_Action (Sprite* sprite, Animator* animator, const FrameRangeAnim
 const Sprite::Mover MakeSpriteGridLayerMover (GridLayer*, Sprite*);
 void Sprite_ScrollAction(Sprite* sprite, const ScrollAnimator* animator, const ScrollAnimation* anim);
 void Sprite_MoveAction (Sprite* sprite, const MovingAnimation& anim);
+void Sprite_FlashAction (Sprite* sprite, const FlashAnimator* animator, const FlashAnimation* anim);
 void DisplaySprites (Bitmap, const Rect&, TileLayer*);
 
 #endif

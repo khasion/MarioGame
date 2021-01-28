@@ -43,7 +43,7 @@ public:
 	void	 	SetDy (int _dy) 	{ dy = _dy;}
 	void		SetMass(double _m){ m = _m;}
 	void 		SetSpeed (int _u)	{ u = _u;}
-	void		SetG(int _g)		{ g = _g;}
+	void		SetG(double _g)	{ g = _g;}
 	void		ResetMass (void)	{ m = mi;}
 
 	Point		GetStartPos (void){ return {startx, starty};}
@@ -65,17 +65,38 @@ private:
 	bool	isHit			= false;
 	int	checkpoint 	= 320;
 	int	coins 		= 0;
+	int	points		= 0;
 public:
 	void Do (void) override;
 	void Do (Sprite*) override {};
 	void Init (void);
 	int  GetCoins (void)		{ return coins;}
 	void SetCoins (int _c)	{ coins = _c;};
-	void AddCoin (void)		{ coins++;}
+	void AddCoin (void)		{
+		coins++;
+		points += 200;
+		al_play_sample(al.coin_sample,1,0,1,ALLEGRO_PLAYMODE_ONCE,NULL);
+		if (coins >= 100) {
+			lives++; coins -= 100;
+		}
+	}
+	int GetPoints (void)		{ return points;}
+	void SetPoints (int p)	{ points = p;}
+	void AddPoints (int p)	{ points += p;}
 	void SetHit (bool b)	{ isHit = b;}
 	bool IsHit (void)		{ return isHit;}
-	void SetSuper (bool b)	{ isSuper = b;}
+	void SetSuper (bool b)	
+			{ 	isSuper = b;
+				if (b) {	points += 1000;}
+			}
 	bool IsSuper (void)		{ return isSuper;}
+	void SetCheck (int x)	{ checkpoint = x;}
+	int  GetCheck (void)		{ return checkpoint;}
+	void SetInv (bool b)		
+			{	isInv = b;
+				if (b) {	points += 1000;}
+			}
+	bool IsInv (void)			{ return isInv;}
 	Mario (int _x, int _y, int _u, double _m, int _lives) :
 		Entity (_x, _y, _u, _m, _lives) {Init();};
 };
@@ -97,6 +118,7 @@ public:
 	void Do (void) override {};
 	void Do (Sprite*) override;
 	void Init (void);
+	Sprite* GetColl (void) { return coll;}
 	Piranha (int _x, int _y, int _lives) :
 		Entity (_x, _y, 0, 0, _lives) { Init();};
 };
@@ -168,6 +190,36 @@ public:
 	void SetStunned (bool b) { isStunned = b;}
 	Koopa (int _x, int _y, int _u, double _m, int _lives, bool red) :
 		Entity (_x, _y, _u, _m, _lives), isRed(red) {Init();};
+};
+
+class Brick : public Entity {
+private:
+public:
+	void Do (void) override;
+	void Do (Sprite*) override {};
+	void Init (void);
+	Brick (int _x, int _y) :
+		Entity (_x, _y, 0, 1, 1) {Init();}
+};
+
+class Teleporter : public Entity {
+private:
+public:
+	void Do (void) override;
+	void Do (Sprite*) override {};
+	void Init (void);
+	Teleporter (int _x, int _y) :
+		Entity (_x, _y, 0, 1, 1) {Init();}
+};
+
+class Squirrel : public Entity {
+private:
+public:
+	void Do (void) override;
+	void Do (Sprite*) override {};
+	void Init (void);
+	Squirrel (int _x, int _y, int _u, double _m, int _lives) :
+		Entity (_x, _y, _u, _m, _lives) {Init();};
 };
 
 class EntityManager {

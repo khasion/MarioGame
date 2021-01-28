@@ -34,12 +34,16 @@ int main()
 
 void gui (void) {
 	al_draw_text(al.font,
-	al_map_rgb(255, 255, 255), 2, 2, 0,
+	al_map_rgb(0, 0, 0), 2, 2, 0,
 	("coins: " + std::to_string(player->GetCoins())).c_str()
 	);
 	al_draw_text(al.font,
-	al_map_rgb(255, 255, 255), 315, 2, 0,
+	al_map_rgb(0, 0, 0), 315, 2, 0,
 	("lives: " + std::to_string(player->GetLives())).c_str()
+	);
+	al_draw_text(al.font,
+	al_map_rgb(0, 0, 0), 520, 2, 0,
+	("points: " + std::to_string(player->GetPoints())).c_str()
 	);
 }
 
@@ -156,13 +160,16 @@ void collisions (void) {
 	CollisionChecker::GetSingleton().Check();
 }
 void user (void) {
+	if (player->GetSprite()->GetX() > 1000) {
+		player->SetCheck(1000);
+	}
 	if (player->IsDead()) {
 		player->SetDead(false);
 		player->GetSprite()->SetPos(
-			player->GetStartPos().x,
+			player->GetCheck(),
 			player->GetStartPos().y - 64
 		);
-		tlayer->SetViewWindow({player->GetStartPos().x - 320, 0, 640, 480});
+		tlayer->SetViewWindow({player->GetCheck() - 320, 0, 640, 480});
 		if (player->GetLives() < 0) {
 			gaem->SetState(START);
 		}

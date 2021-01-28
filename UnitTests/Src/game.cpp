@@ -12,6 +12,7 @@ void Game::MainLoop () {
 	messages.push_back("Development of Intelligent Interfaces and Games");
 	messages.push_back("Term Project, Fall Semester 2020");
 	messages.push_back("Press ENTER to play!");
+	al_play_sample(al.sample,1,0,1,ALLEGRO_PLAYMODE_LOOP,&al.id);
 	while (!IsFinished()) {
 		al_wait_for_event(al.queue, &al.event);
 		MainLoopIteration();

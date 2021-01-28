@@ -186,6 +186,21 @@ void Sprite_ScrollAction (Sprite* sprite, const ScrollAnimator* animator, const 
 		Sprite_ScrollAction(sprite, (ScrollAnimator*) animator, (const ScrollAnimation&) anim);
 	}
 );*/
+void FlashAnimator::Progress (timestamp_t currTime) {
+	while (currTime > lastTime && (currTime - lastTime) >= anim->GetHideDelay())   {
+		lastTime += anim->GetHideDelay();
+		NotifyAction(*anim);
+		if (++currRep == anim->GetRepetitions()) {
+			state = ANIMATOR_RUNNING;
+			NotifyStopped();
+			return;
+		}
+	}
+}
+void Sprite_FlashAction (Sprite* sprite, const FlashAnimator* animator, const FlashAnimation* anim) {
+	if (animator->GetCurrRep()%2 == 0) { sprite->SetVisibility(false);}
+	else { sprite->SetVisibility(true);}
+}
 
 void MotionQuantizer::Move (const Rect& r, int *dx, int *dy) {
 	if (!used) {

@@ -8,6 +8,9 @@ std::vector<std::pair<int, int>> star_xy;
 std::vector<std::pair<int, int>> up_xy;
 std::vector<std::pair<int, int>> koopa_xy;
 std::vector<std::pair<int, int>> redkoopa_xy;
+std::vector<std::pair<int, int>> checkpoint_xy;
+std::vector<std::pair<int, int>> brick_xy;
+std::vector<std::pair<int, int>> squirrel_xy;
 
 void GridLayer::FilterGridMotionDown (const Rect& r, int* dy) {
 	auto y2 = r.y + r.h + 1;
@@ -139,6 +142,15 @@ Index IsEntity (Index index, int x, int y) {
 			return EMPTY_INV_INDEX;
 		case REDKOOPA_INDEX:
 			redkoopa_xy.push_back(std::make_pair(MUL_TILE_WIDTH(x), MUL_TILE_HEIGHT(y)));
+			return EMPTY_INV_INDEX;
+		case CHECKPOINT_INDEX:
+			checkpoint_xy.push_back(std::make_pair(MUL_TILE_WIDTH(x), MUL_TILE_HEIGHT(y)));
+			return index;
+		case BRICK_INDEX:
+			brick_xy.push_back(std::make_pair(MUL_TILE_WIDTH(x), MUL_TILE_HEIGHT(y)));
+			return SOLID_INV_INDEX;
+		case SQUIRREL_INDEX:
+			squirrel_xy.push_back(std::make_pair(MUL_TILE_WIDTH(x), MUL_TILE_HEIGHT(y)));
 			return EMPTY_INV_INDEX;
 	}
 	return index;
