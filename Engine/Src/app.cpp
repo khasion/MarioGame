@@ -46,12 +46,9 @@ void App::Load (void) {
 	al.sample = al_load_sample("../../ThirdParty/samples/mario.ogg");
 	al.coin_sample = al_load_sample("../../ThirdParty/samples/coin_sample.wav");
 	al.jump_sample = al_load_sample("../../ThirdParty/samples/jump_sample.wav");
-	al.die_sample = al_load_sample("../../ThirdParty/samples/die_sample.wav");
 	al.pipe_sample = al_load_sample("../../ThirdParty/samples/pipe_sample.wav");
 	al.power_up_sample = al_load_sample("../../ThirdParty/samples/power_up_sample.wav");
-	al.stage_clear_sample = al_load_sample("../../ThirdParty/samples/stage_clear_sample.wav");
 	al.underground_sample = al_load_sample("../../ThirdParty/samples/underground_sample.wav");
-	al.gameover_sample = al_load_sample("../../ThirdParty/samples/gameover_sample.wav");
 
 	al_register_event_source(al.queue, al_get_keyboard_event_source());
 	al_register_event_source(al.queue, al_get_display_event_source(al.disp));
@@ -84,11 +81,8 @@ void App::Clear (void) {
 	al_destroy_sample(al.sample);
 	al_destroy_sample(al.coin_sample);
 	al_destroy_sample(al.jump_sample);
-	al_destroy_sample(al.die_sample);
 	al_destroy_sample(al.pipe_sample);
 	al_destroy_sample(al.power_up_sample);
-	al_destroy_sample(al.gameover_sample);
-	al_destroy_sample(al.stage_clear_sample);
 }
 
 void InitPowerUps () {
