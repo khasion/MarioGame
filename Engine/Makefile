@@ -14,4 +14,5 @@ $(BIN)/$(TARGET) : $(OBJECT)
 $(BIN)/%.o : $(SRC)/%.cpp
 	$(CC) $(CXXFLAGS) -c $< -o $@
 clean:
-	rm Bin/*
+	rm Bin/*.o
+	rm Bin/game
