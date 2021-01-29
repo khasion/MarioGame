@@ -87,8 +87,7 @@ void App::Clear (void) {
 	al_destroy_sample(al.die_sample);
 	al_destroy_sample(al.pipe_sample);
 	al_destroy_sample(al.power_up_sample);
-	al_destroy_sample(al.stage_clear_sample);
-	al_destroy_sample(al.underground_sample); 
+	al_destroy_sample(al.stage_clear_sample); 
 	al_destroy_sample(al.gameover_sample);
 
 
@@ -399,8 +398,9 @@ void InitCollisions (void) {
 		tele2->GetSprite(),
 		[] (Sprite* s1, Sprite* s2) {
 			if (al.key[ALLEGRO_KEY_RIGHT]) {
-				al_stop_sample(&al.id_2);
-				al_play_sample(al.sample,1,0,1,ALLEGRO_PLAYMODE_LOOP,&al.id);
+				al_destroy_sample(al.underground_sample);
+				//al_stop_sample(&al.id_2);
+				al_play_sample(al.sample,1,0,1,ALLEGRO_PLAYMODE_ONCE,&al.id);
 				player->GetSprite()->SetPos(133*16, 24*16);
 				tlayer->SetViewWindow({133*16-320, 0, 640, 480});
 			}
