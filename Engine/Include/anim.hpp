@@ -235,7 +235,7 @@ public:
 	virtual void 						Progress (timestamp_t currTime) = 0;
 	template<typename Tfunc> void SetOnFinish(const Tfunc& f) 		{ onFinish = f; }
 	template<typename Tfunc> void SetOnStart(const Tfunc& f) 		{ onStart= f; }
-	template<typename Tfunc> void SetOnAction(const Tfunc& f) 		{ onAction= f; }
+	template<typename Tfunc> void SetOnAction(const Tfunc& f)		{ onAction= f; }
 
 	Animator (void);
 	Animator (const Animator&) = delete;

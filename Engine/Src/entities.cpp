@@ -399,7 +399,9 @@ void Koopa::Init () {
 			if (mario->IsInv()) { koopa->Damage(); return;}
 			Sprite* msprite = mario->GetSprite();
 			if (koopa->IsStunned()) {
-				if (!msprite->GetGravityHandler().IsFalling() && *koopa->GetDx() != 0) {
+				if (!msprite->GetGravityHandler().IsFalling()
+				&& ((*koopa->GetDx() < 0 && *mario->GetDx() >= 0)
+				|| (*koopa->GetDx() > 0 && *mario->GetDx() <= 0)) ) {
 					mario->Damage();
 					return;
 				}
