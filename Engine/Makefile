@@ -13,3 +13,5 @@ $(BIN)/$(TARGET) : $(OBJECT)
 	$(CC) $(CXXFLAGS) -o $@ $^
 $(BIN)/%.o : $(SRC)/%.cpp
 	$(CC) $(CXXFLAGS) -c $< -o $@
+clean:
+	rm Bin/*

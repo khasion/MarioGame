@@ -384,7 +384,7 @@ void InitCollisions (void) {
 				);
 				a->SetOnFinish(
 					[] (Animator* animator) {
-						al_play_sample(al.underground_sample, 1, 0, 1, ALLEGRO_PLAYMODE_LOOP, &al.id_2);
+						//al_play_sample(al.underground_sample, 1, 0, 1, ALLEGRO_PLAYMODE_LOOP, &al.id_2);
 						player->GetSprite()->SetPos(210*16, 14*16);
 						tlayer->SetViewWindow({210*16-320, 0, 640, 480});
 					}
@@ -399,7 +399,6 @@ void InitCollisions (void) {
 		tele2->GetSprite(),
 		[] (Sprite* s1, Sprite* s2) {
 			if (al.key[ALLEGRO_KEY_RIGHT]) {
-				al_destroy_sample(al.underground_sample);
 				//al_stop_sample(&al.id_2);
 				al_play_sample(al.sample,1,0,1,ALLEGRO_PLAYMODE_LOOP,&al.id);
 				player->GetSprite()->SetPos(133*16, 24*16);
