@@ -12,7 +12,7 @@ OBJECT = $(patsubst %,$(BIN)/%, $(notdir $(SOURCE:.cpp=.o)))
 $(BIN)/$(TARGET) : $(OBJECT)
 	$(CC) $(CXXFLAGS) -o $@ $^
 $(BIN)/%.o : $(SRC)/%.cpp
-	$(CC) -c $< -o $@
+	$(CC) -c $< -o $@ -std=c++14
 clean:
 	rm Bin/*.o
 	rm Bin/game
